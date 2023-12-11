@@ -1,10 +1,14 @@
+import 'dart:convert';
+
 import 'package:explore_and_remember/blocs/LocationBloc/loc_events.dart';
 import 'package:explore_and_remember/main.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:intl/intl.dart';
 import 'Location.dart';
 import 'blocs/LocationBloc/loc_bloc.dart';
+import 'package:http/http.dart' as http;
 
 class LocationPage extends StatefulWidget {
   final Location location;
@@ -27,6 +31,10 @@ class _LocationPageState extends State<LocationPage> {
   late TextEditingController gps = TextEditingController(text: "Fonctionnalité non implémentée");
   late String id;
   late List<String> imageURLList = [];
+  late double longitude;
+  late double latitude;
+  late GoogleMapController mapController;
+  final String apiKey = 'AIzaSyBC_9BXrQhZpwI3dWGhKiLtew1kMk1oevc';
 
   @override
   void initState() {
@@ -37,6 +45,8 @@ class _LocationPageState extends State<LocationPage> {
     imageURLList = location.getImageURLs();
     id = location.getID;
     date = DateFormat("MMMM dd, yyyy").parse(location.getDate); // convertie la date String en DateTime
+    longitude = location.getLongitude;
+    latitude = location.getLatitude;
   }
 
   Future _selectDate(BuildContext context) async {
@@ -54,16 +64,44 @@ class _LocationPageState extends State<LocationPage> {
     }
   }
 
-  _displayToast() {
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text('Fonctionnalité non implémentée'),
-      ),
-    );
+
+  Future<void> _searchPlaces(String query) async {
+    final String apiUrl = 'https://maps.googleapis.com/maps/api/place/textsearch/json?query=$query&key=$apiKey';
+    final response = await http.get(Uri.parse(apiUrl));
+    if (response.statusCode == 200) {
+      final data = json.decode(response.body);
+      if (data['results'].isEmpty) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Soyez plus précis dans votre recherche'),
+          ),
+        );
+      }
+      setState(() {
+        setState(() {
+          longitude = data['results'][0]['geometry']['location']['lng'];
+          latitude = data['results'][0]['geometry']['location']['lat'];
+        });
+        mapController.animateCamera(CameraUpdate.newCameraPosition(
+          CameraPosition(
+            target: LatLng(latitude, longitude),
+            zoom: 10,
+          ),
+        ));
+      });
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Erreur lors de la recherche, veuillez réessayer'),
+        ),
+      );
+    }
   }
 
   @override
   Widget build(BuildContext context) {
+    print("Latitude : $latitude");
+    print("Longitude : $longitude");
     return Scaffold(
       appBar: AppBar(
         backgroundColor: Theme
@@ -76,14 +114,7 @@ class _LocationPageState extends State<LocationPage> {
             icon: const Icon(Icons.delete),
             onPressed: () {
               BlocProvider.of<LocationBloc>(context).add(DeleteLocation(location));
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) => const MyHomePage(
-                    title: 'Explorer and Remember',
-                  ),
-                ),
-              );
+              Navigator.pop(context);
             },
           ),
         ],
@@ -93,15 +124,27 @@ class _LocationPageState extends State<LocationPage> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text(
-              'Nom du lieu :',
-              style: TextStyle(fontWeight: FontWeight.bold),
-            ),
-            TextField(
-                controller: name,
-                decoration: InputDecoration(
-                  hintText: location.getName,
+            Row(
+              children: [
+                const Text(
+                  'Nom du lieu : ',
+                  style: TextStyle(fontWeight: FontWeight.bold),
                 ),
+                Flexible(
+                  child: TextField(
+                    controller: name,
+                    decoration: InputDecoration(
+                      hintText: location.getName,
+                    ),
+                  ),
+                ),
+                IconButton(
+                  icon: const Icon(Icons.search),
+                  onPressed: () {
+                    _searchPlaces(name.text);
+                  },
+                ),
+              ],
             ),
             const SizedBox(height: 16.0),
             Row(
@@ -133,14 +176,28 @@ class _LocationPageState extends State<LocationPage> {
             ),
             const SizedBox(height: 16.0),
             const Text(
-              'Coordonnées GPS :',
+              'Carte : ',
               style: TextStyle(fontWeight: FontWeight.bold),
             ),
-            TextField(
-                controller: gps,
-                decoration: const InputDecoration(
-                  hintText: "Fonctionnalité non implémentée",
-                )
+            const SizedBox(height: 16.0),
+            SizedBox(
+              height: 200,
+              child: GoogleMap(
+                  onMapCreated: (GoogleMapController controller) {
+                    mapController = controller;
+                  },
+                  initialCameraPosition: CameraPosition(
+                    target: LatLng(latitude, longitude),
+                    zoom: 10,
+                  ),
+                  markers:
+                  {
+                    Marker(
+                        markerId: MarkerId(name.text),
+                        position: LatLng(latitude, longitude)
+                    ),
+                  }
+              ),
             ),
             const SizedBox(height: 16.0),
             const Text(
@@ -150,7 +207,7 @@ class _LocationPageState extends State<LocationPage> {
             Container(
               margin: const EdgeInsets.only(top: 16.0),
               child: ElevatedButton(
-                onPressed: _displayToast,
+                onPressed: () {},
                 child: const Text('Ajouter une photo'),
               ),
             ),
@@ -159,7 +216,7 @@ class _LocationPageState extends State<LocationPage> {
       ),
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () {
-          BlocProvider.of<LocationBloc>(context).add(UpdateLocation(name.text, date, note.text, imageURLList, id, location.getLongitude, location.getLatitude));
+          BlocProvider.of<LocationBloc>(context).add(UpdateLocation(name.text, date, note.text, imageURLList, id, latitude, longitude));
           Navigator.pop(context);
         },
         label: const Text('Enregistrer les modifications'),

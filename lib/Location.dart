@@ -5,8 +5,8 @@ class Location {
   final String date;
   final String note;
   final List<String> imageURLList;
-  final double longitude;
   final double latitude;
+  final double longitude;
 
   Location({
     required this.id,
@@ -14,8 +14,8 @@ class Location {
     required this.date,
     required this.note,
     required this.imageURLList,
-    required this.longitude,
     required this.latitude,
+    required this.longitude,
   });
 
   String get getName => name;

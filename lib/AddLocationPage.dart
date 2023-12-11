@@ -18,17 +18,16 @@ class AddLocationPage extends StatefulWidget {
 
 class _AddLocationPageState extends State<AddLocationPage> {
 
-  TextEditingController name = TextEditingController();
-  TextEditingController note = TextEditingController();
+  final TextEditingController name = TextEditingController();
+  final TextEditingController note = TextEditingController();
+  final String apiKey = 'AIzaSyBC_9BXrQhZpwI3dWGhKiLtew1kMk1oevc';
+  final FocusNode focusNode = FocusNode();
+
   late DateTime date = DateTime.now();
   late List<String> imageURLList = [];
-
   late GoogleMapController mapController;
-  final String apiKey = 'AIzaSyBC_9BXrQhZpwI3dWGhKiLtew1kMk1oevc';
-  double longitude = 2.3522;
-  double latitude = 48.8566;
-
-  FocusNode nameFocusNode = FocusNode();
+  late double latitude = 0.0;
+  late double longitude = 0.0;
 
   Future _selectDate(BuildContext context) async {
     final DateTime? pickedDate = await showDatePicker(
@@ -63,8 +62,8 @@ class _AddLocationPageState extends State<AddLocationPage> {
     }
   }
 
-  Future<void> _searchPlaces(String query) async {
-    final String apiUrl = 'https://maps.googleapis.com/maps/api/place/textsearch/json?query=$query&key=$apiKey';
+  Future<void> _searchPlaces(String locationQuery) async {
+    final String apiUrl = 'https://maps.googleapis.com/maps/api/place/textsearch/json?query=$locationQuery&key=$apiKey';
     final response = await http.get(Uri.parse(apiUrl));
     if (response.statusCode == 200) {
       final data = json.decode(response.body);
@@ -76,10 +75,11 @@ class _AddLocationPageState extends State<AddLocationPage> {
         );
       }
       setState(() {
-        setState(() {
-          longitude = data['results'][0]['geometry']['location']['lng'];
-          latitude = data['results'][0]['geometry']['location']['lat'];
-        });
+        latitude = data['results'][0]['geometry']['location']['lat'];
+        longitude = data['results'][0]['geometry']['location']['lng'];
+      });
+
+      setState(() {
         mapController.animateCamera(CameraUpdate.newCameraPosition(
           CameraPosition(
             target: LatLng(latitude, longitude),
@@ -92,7 +92,8 @@ class _AddLocationPageState extends State<AddLocationPage> {
         const SnackBar(
           content: Text('Erreur lors de la recherche, veuillez réessayer'),
         ),
-      );    }
+      );
+    }
   }
 
   @override
@@ -115,14 +116,15 @@ class _AddLocationPageState extends State<AddLocationPage> {
                 Flexible(
                   child: TextField(
                       controller: name,
-                      focusNode: nameFocusNode
+                      focusNode: focusNode
                   ),
                 ),
                 IconButton(
                   icon: const Icon(Icons.search),
                   onPressed: () {
-                    _searchPlaces(name.text);
-                    nameFocusNode.unfocus();
+                    final locationQuery = name.text;
+                    _searchPlaces(locationQuery);
+                    focusNode.unfocus();
                   },
                 ),
               ],
@@ -164,10 +166,9 @@ class _AddLocationPageState extends State<AddLocationPage> {
                 },
                 initialCameraPosition: CameraPosition(
                   target: LatLng(latitude, longitude),
-                  zoom: 10,
+                  zoom: 1,
                 ),
-                markers:
-                {
+                markers: {
                   Marker(
                     markerId: MarkerId(name.text),
                     position: LatLng(latitude, longitude)
@@ -175,21 +176,6 @@ class _AddLocationPageState extends State<AddLocationPage> {
                 }
               ),
             ),
-            /*GestureDetector(
-              onLongPress: () {
-                MapsLauncher.launchQuery('Paris, France');
-              },
-              child: SizedBox(
-                height: 200,
-                child: GoogleMap(
-                  onMapCreated: (GoogleMapController controller) {
-                    mapController = controller;
-                  },
-                  initialCameraPosition: initialCameraPosition,
-                ),
-              ),
-            ),*/
-            const SizedBox(height: 16.0),
             const SizedBox(height: 16.0),
             const Text(
               'Photos :',
@@ -208,7 +194,7 @@ class _AddLocationPageState extends State<AddLocationPage> {
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () {
           BlocProvider.of<LocationBloc>(context).add(
-            AddLocation(name.text, date, note.text, imageURLList, longitude, latitude),
+            AddLocation(name.text, date, note.text, imageURLList, latitude, longitude),
           );
           Navigator.pop(context);
         },

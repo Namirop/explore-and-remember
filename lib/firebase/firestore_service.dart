@@ -19,8 +19,8 @@ class FirestoreService {
             date: data['Date'],
             note: data['Note'],
             imageURLList: List<String>.from(data['ImageURLs']), // convertie la liste dynamique en liste de String
-            longitude: data['Longitude'],
             latitude: data['Latitude'],
+            longitude: data['Longitude'],
           );
         }).toList();
       });

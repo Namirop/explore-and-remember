@@ -2,6 +2,7 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'AddLocationPage.dart';
+import 'MapPage.dart';
 import 'blocs/LocationBloc/loc_bloc.dart';
 import 'blocs/LocationBloc/loc_events.dart';
 import 'blocs/LocationBloc/loc_states.dart';
@@ -70,6 +71,59 @@ class _MyHomePageState extends State<MyHomePage> {
       appBar: AppBar(
         backgroundColor: Theme.of(context).colorScheme.inversePrimary,
         title: Text(widget.title),
+      ),
+      drawer: Drawer(
+        child: ListView(
+          padding: EdgeInsets.zero,
+          children: [
+            const DrawerHeader(
+              decoration: BoxDecoration(
+                color: Colors.deepPurple,
+              ),
+              child: Text(
+                'Explorer and Remember',
+                style: TextStyle(
+                  color: Colors.white,
+                  fontSize: 24,
+                ),
+              ),
+            ),
+            ListTile(
+              title: const Text('LISTE DES LIEUX'),
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => const MyHomePage(
+                      title: 'Explorer and Remember',
+                    ),
+                  ),
+                );
+              },
+            ),
+            ListTile(
+              title: const Text('PHOTOS'),
+              onTap: () {},
+            ),
+            ListTile(
+              title: const Text('SAUVEGARDEES'),
+              onTap: () {},
+            ),
+            ListTile(
+              title: const Text('CARTES DES LIEUX'),
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => const MapPage(
+                      title: 'Cartes des lieux',
+                    ),
+                  ),
+                );
+              },
+            ),
+          ],
+        )
       ),
       body: BlocBuilder<LocationBloc, LocationState>(
         builder: (context, state) {

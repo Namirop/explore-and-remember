@@ -10,10 +10,10 @@ class AddLocation extends LocationEvent {
   final DateTime date;
   final String note;
   final List<String> imageURLList;
-  final double longitude;
   final double latitude;
+  final double longitude;
 
-  AddLocation(this.name, this.date, this.note, this.imageURLList, this.longitude, this.latitude);
+  AddLocation(this.name, this.date, this.note, this.imageURLList, this.latitude, this.longitude);
 }
 
 class UpdateLocation extends LocationEvent {
@@ -22,10 +22,10 @@ class UpdateLocation extends LocationEvent {
   final String note;
   final List<String> imageURLList;
   final String id;
-  final double longitude;
   final double latitude;
+  final double longitude;
 
-  UpdateLocation(this.name, this.date, this.note, this.imageURLList, this.id, this.longitude, this.latitude);
+  UpdateLocation(this.name, this.date, this.note, this.imageURLList, this.id, this.latitude, this.longitude);
 }
 
 class DeleteLocation extends LocationEvent {
