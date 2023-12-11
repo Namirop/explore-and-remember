@@ -1,12 +1,13 @@
+import 'dart:convert';
 import 'dart:io';
-
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:image_picker/image_picker.dart';
-
 import 'blocs/LocationBloc/loc_bloc.dart';
 import 'blocs/LocationBloc/loc_events.dart';
+import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'package:http/http.dart' as http;
 
 class AddLocationPage extends StatefulWidget {
   const AddLocationPage({Key? key}) : super(key: key);
@@ -17,22 +18,25 @@ class AddLocationPage extends StatefulWidget {
 
 class _AddLocationPageState extends State<AddLocationPage> {
 
-  final TextEditingController name = TextEditingController();
-  late  DateTime date = DateTime.now();
-  final TextEditingController note = TextEditingController();
-  final TextEditingController gps = TextEditingController();
+  TextEditingController name = TextEditingController();
+  TextEditingController note = TextEditingController();
+  late DateTime date = DateTime.now();
   late List<String> imageURLList = [];
 
+  late GoogleMapController mapController;
+  final String apiKey = 'AIzaSyBC_9BXrQhZpwI3dWGhKiLtew1kMk1oevc';
+  double longitude = 2.3522;
+  double latitude = 48.8566;
+
+  FocusNode nameFocusNode = FocusNode();
+
   Future _selectDate(BuildContext context) async {
-    // 'showDatePicker' retourne un pickedDate, càd la date choisit dans le calendrier
-    // 'showDatePicker' est une fonction asynchrone, donc on utilise 'await'
     final DateTime? pickedDate = await showDatePicker(
       context: context,
       initialDate: date,
       firstDate: DateTime(1910),
       lastDate: DateTime(date.year + 1),
     );
-    // si pickedDate n'est pas null, on met à jour la date
     if (pickedDate != null) {
       setState(() => date = pickedDate);
     }
@@ -43,34 +47,52 @@ class _AddLocationPageState extends State<AddLocationPage> {
 
     final List<XFile> pickedImagesFromGallery = await picker.pickMultiImage();
 
-    if(pickedImagesFromGallery.isNotEmpty) {
+    if (pickedImagesFromGallery.isNotEmpty) {
       for (var image in pickedImagesFromGallery) {
-        // Ici, on va uploader chaque image choisie dans le storage de Firebase
-
-        // On assigne un nom unique à chaque image via cette methode
         String uniqueFileName = DateTime.now().millisecondsSinceEpoch.toString();
-
-        // On récupère l'extension de l'image
         final ext = image.path.split('.').last;
-
-        //On créer une référence à l'image (le '.$ext' n'est pas obligatoire pour que cela fonctionne)
-        Reference imageReference = FirebaseStorage.instance.ref().child('images/$uniqueFileName.$ext');
-
-          // On upload l'image dans le storage de Firebase
+        Reference imageReference =
+        FirebaseStorage.instance.ref().child('images/$uniqueFileName.$ext');
         File imageFile = File(image.path);
-        // SettableMetadata permet de définir le type de fichier uploadé (l'ajouter sinon cela ne fonctionne pas)
         await imageReference.putFile(imageFile, SettableMetadata(contentType: 'image/$ext'));
-
-        // On récupère l'URL de l'image uploadée
         final imageURL = await imageReference.getDownloadURL();
-
-        // On ajoute l'URL de l'image uploadée dans la liste des URL
         setState(() {
           imageURLList.add(imageURL);
-          print("IMAGE URL LIST: $imageURLList");
         });
       }
     }
+  }
+
+  Future<void> _searchPlaces(String query) async {
+    final String apiUrl = 'https://maps.googleapis.com/maps/api/place/textsearch/json?query=$query&key=$apiKey';
+    final response = await http.get(Uri.parse(apiUrl));
+    if (response.statusCode == 200) {
+      final data = json.decode(response.body);
+      if (data['results'].isEmpty) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Soyez plus précis dans votre recherche'),
+          ),
+        );
+      }
+      setState(() {
+        setState(() {
+          longitude = data['results'][0]['geometry']['location']['lng'];
+          latitude = data['results'][0]['geometry']['location']['lat'];
+        });
+        mapController.animateCamera(CameraUpdate.newCameraPosition(
+          CameraPosition(
+            target: LatLng(latitude, longitude),
+            zoom: 10,
+          ),
+        ));
+      });
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Erreur lors de la recherche, veuillez réessayer'),
+        ),
+      );    }
   }
 
   @override
@@ -84,11 +106,27 @@ class _AddLocationPageState extends State<AddLocationPage> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text(
-              'Nom du lieu :',
-              style: TextStyle(fontWeight: FontWeight.bold),
+            Row(
+              children: [
+                const Text(
+                  'Nom du lieu : ',
+                  style: TextStyle(fontWeight: FontWeight.bold),
+                ),
+                Flexible(
+                  child: TextField(
+                      controller: name,
+                      focusNode: nameFocusNode
+                  ),
+                ),
+                IconButton(
+                  icon: const Icon(Icons.search),
+                  onPressed: () {
+                    _searchPlaces(name.text);
+                    nameFocusNode.unfocus();
+                  },
+                ),
+              ],
             ),
-            TextField(controller: name),
             const SizedBox(height: 16.0),
             Row(
               children: [
@@ -114,10 +152,44 @@ class _AddLocationPageState extends State<AddLocationPage> {
             TextField(controller: note),
             const SizedBox(height: 16.0),
             const Text(
-              'Coordonnées GPS :',
+              'Carte : ',
               style: TextStyle(fontWeight: FontWeight.bold),
             ),
-            TextField(controller: gps),
+            const SizedBox(height: 16.0),
+            SizedBox(
+              height: 200,
+              child: GoogleMap(
+                onMapCreated: (GoogleMapController controller) {
+                  mapController = controller;
+                },
+                initialCameraPosition: CameraPosition(
+                  target: LatLng(latitude, longitude),
+                  zoom: 10,
+                ),
+                markers:
+                {
+                  Marker(
+                    markerId: MarkerId(name.text),
+                    position: LatLng(latitude, longitude)
+                  ),
+                }
+              ),
+            ),
+            /*GestureDetector(
+              onLongPress: () {
+                MapsLauncher.launchQuery('Paris, France');
+              },
+              child: SizedBox(
+                height: 200,
+                child: GoogleMap(
+                  onMapCreated: (GoogleMapController controller) {
+                    mapController = controller;
+                  },
+                  initialCameraPosition: initialCameraPosition,
+                ),
+              ),
+            ),*/
+            const SizedBox(height: 16.0),
             const SizedBox(height: 16.0),
             const Text(
               'Photos :',
@@ -135,14 +207,14 @@ class _AddLocationPageState extends State<AddLocationPage> {
       ),
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () {
-            BlocProvider.of<LocationBloc>(context).add(AddLocation(name.text, date, note.text, imageURLList));
-            Navigator.pop(context);
-          },
+          BlocProvider.of<LocationBloc>(context).add(
+            AddLocation(name.text, date, note.text, imageURLList, longitude, latitude),
+          );
+          Navigator.pop(context);
+        },
         label: const Text('Ajouter ce lieu'),
         icon: const Icon(Icons.add),
       ),
-
     );
   }
 }
-

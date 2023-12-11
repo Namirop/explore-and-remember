@@ -20,7 +20,7 @@ class LocationBloc extends Bloc<LocationEvent, LocationState> {
     on<AddLocation>((event, emit) async {
       emit(LocationLoading());
       try {
-        await _firestoreService.addLocation(event.name, event.date, event.note, event.imageURLList);
+        await _firestoreService.addLocation(event.name, event.date, event.note, event.imageURLList, event.longitude, event.latitude);
       } catch (e) {
         emit(LocationError("Ajout du lieu impossible : $e"));
       }
@@ -29,7 +29,7 @@ class LocationBloc extends Bloc<LocationEvent, LocationState> {
     on<UpdateLocation>((event, emit) async {
       emit(LocationLoading());
       try {
-        await _firestoreService.updateLocation(event.name, event.date, event.note, event.imageURLList, event.id);
+        await _firestoreService.updateLocation(event.name, event.date, event.note, event.imageURLList, event.id, event.longitude, event.latitude);
       } catch (e) {
         emit(LocationError("Modification du lieu impossible : $e"));
       }

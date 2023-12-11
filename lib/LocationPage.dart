@@ -159,7 +159,7 @@ class _LocationPageState extends State<LocationPage> {
       ),
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () {
-          BlocProvider.of<LocationBloc>(context).add(UpdateLocation(name.text, date, note.text, imageURLList, id));
+          BlocProvider.of<LocationBloc>(context).add(UpdateLocation(name.text, date, note.text, imageURLList, id, location.getLongitude, location.getLatitude));
           Navigator.pop(context);
         },
         label: const Text('Enregistrer les modifications'),

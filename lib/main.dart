@@ -108,7 +108,7 @@ class _MyHomePageState extends State<MyHomePage> {
                             builder: (BuildContext context) {
                               return Dialog(
                                 child: Image.network(
-                                  location.getFirstImageURL()!,
+                                  location.getFirstImage()!,
                                   fit: BoxFit.contain,
                                 ),
                               );
@@ -118,9 +118,9 @@ class _MyHomePageState extends State<MyHomePage> {
                         child: SizedBox(
                           width: 120,
                           height: 80,
-                          child: location.getFirstImageURL() != null
+                          child: location.getFirstImage() != null
                               ? Image.network(
-                            location.getFirstImageURL()!,
+                            location.getFirstImage()!,
                             fit: BoxFit.cover,
                           )
                               : const Text("Aucune image"),

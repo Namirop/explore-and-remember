@@ -19,6 +19,8 @@ class FirestoreService {
             date: data['Date'],
             note: data['Note'],
             imageURLList: List<String>.from(data['ImageURLs']), // convertie la liste dynamique en liste de String
+            longitude: data['Longitude'],
+            latitude: data['Latitude'],
           );
         }).toList();
       });
@@ -27,7 +29,7 @@ class FirestoreService {
     }
   }
 
-  Future<void> addLocation(String name, DateTime date, String note, List<String> imageURLList) async {
+  Future<void> addLocation(String name, DateTime date, String note, List<String> imageURLList, double latitude, double longitude) async {
     String dateStringFormat = DateFormat("MMMM dd, yyyy").format(date);
     try {
       await locationsCollection.add({
@@ -35,13 +37,15 @@ class FirestoreService {
         'Date': dateStringFormat,
         'Note': note,
         'ImageURLs': imageURLList,
+        'Latitude': latitude,
+        'Longitude': longitude,
       });
     } catch (e) {
       throw Exception(e.toString());
     }
   }
 
-  Future<void> updateLocation(String name, DateTime date, String note, List<String> imageURLList, String id) async {
+  Future<void> updateLocation(String name, DateTime date, String note, List<String> imageURLList, String id, double latitude, double longitude) async {
     String dateStringFormat = DateFormat("MMMM dd, yyyy").format(date);
     try {
       await locationsCollection.doc(id).update({
@@ -49,6 +53,8 @@ class FirestoreService {
         'Date': dateStringFormat,
         'Note': note,
         'ImageURLs': imageURLList,
+        'Latitude': latitude,
+        'Longitude': longitude,
       });
     } catch (e) {
       throw Exception(e.toString());

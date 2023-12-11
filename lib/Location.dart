@@ -5,6 +5,8 @@ class Location {
   final String date;
   final String note;
   final List<String> imageURLList;
+  final double longitude;
+  final double latitude;
 
   Location({
     required this.id,
@@ -12,15 +14,9 @@ class Location {
     required this.date,
     required this.note,
     required this.imageURLList,
+    required this.longitude,
+    required this.latitude,
   });
-
-  set setName(String name) => name = name;
-  set setDate(String date) => date = date;
-  set setNote (String note) => note = note;
-  set setImageURLList(List<String> imageURLList) {
-    this.imageURLList.clear();
-    this.imageURLList.addAll(imageURLList);
-  }
 
   String get getName => name;
   String get getDate => date;
@@ -29,8 +25,10 @@ class Location {
   List<String> getImageURLs() {
     return List.from(imageURLList);
   }
+  double get getLongitude => longitude;
+  double get getLatitude => latitude;
 
-  String? getFirstImageURL() {
+  String? getFirstImage() {
     if (imageURLList.isNotEmpty) {
       return imageURLList[0];
     } else {
