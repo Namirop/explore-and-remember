@@ -1,6 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_storage/firebase_storage.dart';
-import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import '../Location.dart';
 
@@ -62,8 +61,6 @@ class FirestoreService {
   }
 
   Future<void> deleteLocation(Location location) async {
-    final List<String> imageURLList = location.getImageURLs();
-    deleteImageFromFirebaseStorage(imageURLList);
     try {
       await locationsCollection.doc(location.getID).delete();
     } catch (e) {
@@ -71,7 +68,7 @@ class FirestoreService {
     }
   }
 
-  Future<void> deleteImageFromFirebaseStorage(List<String> imageURLList) async {
+  Future<void> deleteImagesFromFirebaseStorage(List<String> imageURLList) async {
     for (String imageURL in imageURLList) {
       try {
         // On extrait le nom du fichier à partir de l'URL de l'image
@@ -85,6 +82,19 @@ class FirestoreService {
       } catch (e) {
         throw Exception(e.toString());
       }
+    }
+  }
+
+  Future<void> deleteImageFromFirebaseStorage(String imageURL) async {
+    try {
+      Uri uri = Uri.parse(imageURL);
+      String filePath = uri.pathSegments.last;
+
+      Reference imageReference = FirebaseStorage.instance.ref().child(filePath);
+      await imageReference.delete();
+
+    } catch (e) {
+      throw Exception(e.toString());
     }
   }
 

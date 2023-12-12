@@ -1,15 +1,14 @@
 import 'package:firebase_storage/firebase_storage.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
-class AllPicturesPage extends StatefulWidget {
-  const AllPicturesPage({Key? key}) : super(key: key);
+class AllImagesPage extends StatefulWidget {
+  const AllImagesPage({Key? key}) : super(key: key);
 
   @override
-  State<AllPicturesPage> createState() => _AllPicturesPageState();
+  State<AllImagesPage> createState() => _AllImagesPageState();
 }
 
-class _AllPicturesPageState extends State<AllPicturesPage> {
+class _AllImagesPageState extends State<AllImagesPage> {
 
   late List<String> allImagesURLList = [];
 

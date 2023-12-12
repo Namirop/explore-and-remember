@@ -1,12 +1,18 @@
+import 'dart:io';
 import 'dart:ui';
 import 'package:explore_and_remember/UpdateLocationPage.dart';
+import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'package:intl/intl.dart';
 import 'Location.dart';
 import 'blocs/LocationBloc/loc_bloc.dart';
 import 'blocs/LocationBloc/loc_events.dart';
 import 'blocs/LocationBloc/loc_states.dart';
+import 'main.dart';
+import 'package:http/http.dart' as http;
+
 
 class InformationLocationPage extends StatefulWidget {
   final Location location;
@@ -29,6 +35,7 @@ class _InformationLocationPageState extends State<InformationLocationPage> {
   late double longitude;
   late String name;
   late String note;
+  late DateTime date;
   late int currentIndex = 0;
 
 
@@ -41,7 +48,30 @@ class _InformationLocationPageState extends State<InformationLocationPage> {
     longitude = location.getLongitude;
     name = location.getName;
     note = location.getNote;
+    date = DateFormat("MMMM dd, yyyy").parse(location.getDate);
+    BlocProvider.of<LocationBloc>(context).add(GetLocationInformation(location.id));
   }
+
+  Future<void> _saveImage(String imageURL) async {
+
+    // On télécharge le fichier de l'image à partir de son URL
+    final response = await http.get(Uri.parse(imageURL));
+    // On récupère les bytes de l'image
+    final bytes = response.bodyBytes;
+
+    // On récupère le nom unique de l'image
+    final uniqueFileName = imageURL.split('/').last;
+
+    // On récupère l'extension
+    final ext = uniqueFileName.split('.').last;
+
+    // On crée une référence à l'emplacement où l'image sera sauvegardée
+    Reference imageSavedReference = FirebaseStorage.instance.ref().child('saved/$uniqueFileName.$ext');
+
+    // On sauvegarde l'image
+    await imageSavedReference.putData(bytes);
+  }
+
 
   @override
   Widget build(BuildContext context) {
@@ -52,7 +82,17 @@ class _InformationLocationPageState extends State<InformationLocationPage> {
         actions: [
           IconButton(
             icon: const Icon(Icons.edit),
-            onPressed: () async {
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => UpdateLocationPage(
+                    location: location,
+                  ),
+                ),
+              );
+            },
+            /*onPressed: () async {
               bool changes = await Navigator.push(
                 context,
                 MaterialPageRoute(
@@ -65,7 +105,7 @@ class _InformationLocationPageState extends State<InformationLocationPage> {
                 // Permet de récupérer les nouvelles informations du lieu après modification sur la page de modification
                 BlocProvider.of<LocationBloc>(context).add(GetLocationInformation(location.id));
               }
-            },
+            },*/
           ),
         ],
       ),
@@ -82,6 +122,7 @@ class _InformationLocationPageState extends State<InformationLocationPage> {
             longitude = location.getLongitude;
             name = location.getName;
             note = location.getNote;
+            date = DateFormat("MMMM dd, yyyy").parse(location.getDate);
           }
           return SingleChildScrollView(
             child: Padding(
@@ -101,13 +142,39 @@ class _InformationLocationPageState extends State<InformationLocationPage> {
                         builder: (BuildContext context) {
                           return Dialog(
                             child: BackdropFilter(
-                              filter: ImageFilter.blur(sigmaX: 2, sigmaY: 2),
-                              child: Image.network(
-                                imageURLList[currentIndex],
-                                fit: BoxFit.contain,
+                              filter: ImageFilter.blur(sigmaX: 1, sigmaY: 1),
+                              child: Column(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  Image.network(
+                                    imageURLList[currentIndex],
+                                    fit: BoxFit.contain,
+                                  ),
+                                  const SizedBox(height: 16.0),
+                                  Row(
+                                    mainAxisAlignment: MainAxisAlignment.spaceAround,
+                                    children: [
+                                      IconButton(
+                                        icon: const Icon(Icons.save),
+                                        onPressed: () {
+                                          final imageURL = imageURLList[currentIndex];
+                                          _saveImage(imageURL);
+                                          Navigator.pop(context);
+                                        },
+                                      ),
+                                      IconButton(
+                                        icon: const Icon(Icons.delete),
+                                        onPressed: () {
+                                          Navigator.pop(context);
+                                        },
+                                      ),
+                                    ],
+                                  ),
+                                ],
                               ),
                             ),
                           );
+
                         },
                       );
                     },
@@ -139,6 +206,13 @@ class _InformationLocationPageState extends State<InformationLocationPage> {
                   Text(note),
                   const SizedBox(height: 16.0),
                   const Text(
+                    'Date de visite : ',
+                    style: TextStyle(fontWeight: FontWeight.bold),
+                  ),
+                  const SizedBox(height: 16.0),
+                  Text('${date.day}/${date.month}/${date.year}'),
+                  const SizedBox(height: 16.0),
+                  const Text(
                     'Carte : ',
                     style: TextStyle(fontWeight: FontWeight.bold),
                   ),
@@ -166,6 +240,20 @@ class _InformationLocationPageState extends State<InformationLocationPage> {
             ),
           );
         },
+      ),
+      floatingActionButton: FloatingActionButton.extended(
+        onPressed: () {
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => const MyHomePage(
+                title: 'Explorer and Remember',
+              ),
+            ),
+          );
+        },
+        label: const Text('Retour'),
+        icon: const Icon(Icons.arrow_back),
       ),
     );
   }

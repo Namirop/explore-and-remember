@@ -12,6 +12,7 @@ class LocationBloc extends Bloc<LocationEvent, LocationState> {
       try {
         await for (var locations in _firestoreService.getLocations()) {
           emit(LocationsLoaded(locations));
+          print("LOCATIONS EMISES");
         }
       } catch (e) {
         emit(LocationError("Récupération des lieux impossible : $e"));
@@ -42,6 +43,24 @@ class LocationBloc extends Bloc<LocationEvent, LocationState> {
         await _firestoreService.deleteLocation(event.location);
       } catch (e) {
         emit(LocationError("Suppression du lieu impossible : $e"));
+      }
+    });
+
+    on<DeleteImagesFromFirebaseStorage>((event, emit) async {
+      emit(LocationLoading());
+      try {
+        await _firestoreService.deleteImagesFromFirebaseStorage(event.imageURLList);
+      } catch (e) {
+        emit(LocationError("Suppression des images impossible : $e"));
+      }
+    });
+
+    on<DeleteImageFromFirebaseStorage>((event, emit) async {
+      emit(LocationLoading());
+      try {
+        await _firestoreService.deleteImageFromFirebaseStorage(event.imageURL);
+      } catch (e) {
+        emit(LocationError("Suppression de l'image impossible : $e"));
       }
     });
 

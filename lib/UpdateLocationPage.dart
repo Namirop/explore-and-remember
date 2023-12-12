@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'dart:io';
 
+import 'package:explore_and_remember/InformationLocationPage.dart';
 import 'package:explore_and_remember/blocs/LocationBloc/loc_events.dart';
 import 'package:explore_and_remember/main.dart';
 import 'package:firebase_storage/firebase_storage.dart';
@@ -47,7 +48,7 @@ class _UpdateLocationPageState extends State<UpdateLocationPage> {
     note = TextEditingController(text: location.getNote);
     imageURLList = location.getImageURLs();
     id = location.getID;
-    date = DateFormat("MMMM dd, yyyy").parse(location.getDate); // convertie la date String en DateTime
+    date = DateFormat("MMMM dd, yyyy").parse(location.getDate);
     longitude = location.getLongitude;
     latitude = location.getLatitude;
   }
@@ -140,7 +141,15 @@ class _UpdateLocationPageState extends State<UpdateLocationPage> {
             icon: const Icon(Icons.delete),
             onPressed: () {
               BlocProvider.of<LocationBloc>(context).add(DeleteLocation(location));
-              Navigator.pop(context);
+              BlocProvider.of<LocationBloc>(context).add(DeleteImagesFromFirebaseStorage(imageURLList));
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => const MyHomePage(
+                    title: 'Explorer and Remember',
+                  ),
+                ),
+              );
             },
           ),
         ],
@@ -188,7 +197,7 @@ class _UpdateLocationPageState extends State<UpdateLocationPage> {
                 ),
               ],
             ),
-            Text(DateFormat('MMMM dd, yyyy').format(date)),
+            Text('${date.day}/${date.month}/${date.year}'),
             const SizedBox(height: 16.0),
             const Text(
               'Notes : ',
@@ -243,7 +252,14 @@ class _UpdateLocationPageState extends State<UpdateLocationPage> {
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () {
           BlocProvider.of<LocationBloc>(context).add(UpdateLocation(name.text, date, note.text, imageURLList, id, latitude, longitude));
-          Navigator.pop(context, true);
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => InformationLocationPage(
+                location: location,
+              ),
+            ),
+          );
         },
         label: const Text('Enregistrer les modifications'),
         icon: const Icon(Icons.update),

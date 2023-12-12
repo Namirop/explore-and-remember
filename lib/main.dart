@@ -5,14 +5,14 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'AddLocationPage.dart';
-import 'AllPicturesPage.dart';
+import 'AllImagesPage.dart';
 import 'MapPage.dart';
+import 'SavedImagesPage.dart';
 import 'blocs/LocationBloc/loc_bloc.dart';
 import 'blocs/LocationBloc/loc_events.dart';
 import 'blocs/LocationBloc/loc_states.dart';
 import 'firebase/firebase_options.dart';
 import 'Location.dart';
-import 'UpdateLocationPage.dart';
 import 'firebase/firestore_service.dart';
 
 void main() async {
@@ -57,6 +57,7 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
+
   @override
   void initState() {
     BlocProvider.of<LocationBloc>(context).add(GetLocations());
@@ -64,18 +65,14 @@ class _MyHomePageState extends State<MyHomePage> {
   }
 
   @override
-  void didChangeDependencies() {
-    BlocProvider.of<LocationBloc>(context).add(GetLocations());
-    super.didChangeDependencies();
-  }
-
-  @override
   Widget build(BuildContext context) {
     return Scaffold(
+
       appBar: AppBar(
         backgroundColor: Theme.of(context).colorScheme.inversePrimary,
         title: Text(widget.title),
       ),
+
       drawer: Drawer(
         child: ListView(
           padding: EdgeInsets.zero,
@@ -98,9 +95,7 @@ class _MyHomePageState extends State<MyHomePage> {
                 Navigator.push(
                   context,
                   MaterialPageRoute(
-                    builder: (context) => const MyHomePage(
-                      title: 'Explorer and Remember',
-                    ),
+                    builder: (context) => const MyHomePage(title: 'Explorer and Remember',),
                   ),
                 );
               },
@@ -111,14 +106,21 @@ class _MyHomePageState extends State<MyHomePage> {
                 Navigator.push(
                   context,
                   MaterialPageRoute(
-                    builder: (context) => const AllPicturesPage(),
+                    builder: (context) => const AllImagesPage(),
                   ),
                 );
               },
             ),
             ListTile(
               title: const Text('SAUVEGARDEES'),
-              onTap: () {},
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => const SavedImagesPage(),
+                  ),
+                );
+              },
             ),
             ListTile(
               title: const Text('CARTES DES LIEUX'),
@@ -136,6 +138,7 @@ class _MyHomePageState extends State<MyHomePage> {
           ],
         )
       ),
+
       body: BlocBuilder<LocationBloc, LocationState>(
         builder: (context, state) {
           if (state is LocationLoading) {
@@ -205,6 +208,8 @@ class _MyHomePageState extends State<MyHomePage> {
           return const Text("Aucun lieu");
         },
       ),
+
+
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () {
           Navigator.push(
