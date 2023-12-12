@@ -2,6 +2,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../firebase/firestore_service.dart';
 import 'loc_events.dart';
 import 'loc_states.dart';
+import '../../Location.dart';
 
 class LocationBloc extends Bloc<LocationEvent, LocationState> {
   final FirestoreService _firestoreService;
@@ -10,7 +11,7 @@ class LocationBloc extends Bloc<LocationEvent, LocationState> {
       emit(LocationLoading());
       try {
         await for (var locations in _firestoreService.getLocations()) {
-          emit(LocationLoaded(locations));
+          emit(LocationsLoaded(locations));
         }
       } catch (e) {
         emit(LocationError("Récupération des lieux impossible : $e"));
@@ -43,5 +44,16 @@ class LocationBloc extends Bloc<LocationEvent, LocationState> {
         emit(LocationError("Suppression du lieu impossible : $e"));
       }
     });
+
+    on<GetLocationInformation>((event, emit) async {
+      emit(LocationLoading());
+      try {
+        Location location = await _firestoreService.getLocationInformation(event.locationId);
+        emit(LocationLoaded(location));
+      } catch (e) {
+        emit(LocationError("Récupération des informations du lieu impossible : $e"));
+      }
+    });
+
   }
 }

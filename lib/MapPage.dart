@@ -38,7 +38,7 @@ class _MapPageState extends State<MapPage> {
             return const Center(
                 child: CircularProgressIndicator()
             );
-          } else if (state is LocationLoaded) {
+          } else if (state is LocationsLoaded) {
             return GoogleMap(
               initialCameraPosition: const CameraPosition(
                 target: LatLng(0.0, 0.0),

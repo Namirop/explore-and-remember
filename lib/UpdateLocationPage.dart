@@ -1,28 +1,31 @@
 import 'dart:convert';
+import 'dart:io';
 
 import 'package:explore_and_remember/blocs/LocationBloc/loc_events.dart';
 import 'package:explore_and_remember/main.dart';
+import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:intl/intl.dart';
 import 'Location.dart';
 import 'blocs/LocationBloc/loc_bloc.dart';
 import 'package:http/http.dart' as http;
 
-class LocationPage extends StatefulWidget {
+class UpdateLocationPage extends StatefulWidget {
   final Location location;
 
-  const LocationPage({
+  const UpdateLocationPage({
     Key? key,
         required this.location,
   }) : super(key: key);
 
   @override
-  State<LocationPage> createState() => _LocationPageState();
+  State<UpdateLocationPage> createState() => _UpdateLocationPageState();
 }
 
-class _LocationPageState extends State<LocationPage> {
+class _UpdateLocationPageState extends State<UpdateLocationPage> {
 
   late Location location;
   late TextEditingController name;
@@ -95,6 +98,29 @@ class _LocationPageState extends State<LocationPage> {
           content: Text('Erreur lors de la recherche, veuillez réessayer'),
         ),
       );
+    }
+  }
+
+  Future _pickImageFromPhoneGallery() async {
+    final ImagePicker picker = ImagePicker();
+
+    final List<XFile> pickedImagesFromGallery = await picker.pickMultiImage();
+
+    if (pickedImagesFromGallery.isNotEmpty) {
+      for (var image in pickedImagesFromGallery) {
+        String uniqueFileName = DateTime.now().millisecondsSinceEpoch.toString();
+        final ext = image.path.split('.').last;
+        Reference imageReference = FirebaseStorage.instance.ref().child('images/$uniqueFileName.$ext');
+        File imageFile = File(image.path);
+        await imageReference.putFile(imageFile, SettableMetadata(contentType: 'image/$ext'));
+        final imageURL = await imageReference.getDownloadURL();
+        setState(() {
+          imageURLList.add(imageURL);
+          for (var imageURL in imageURLList) {
+            print("Image URL : $imageURL");
+          }
+        });
+      }
     }
   }
 
@@ -207,7 +233,7 @@ class _LocationPageState extends State<LocationPage> {
             Container(
               margin: const EdgeInsets.only(top: 16.0),
               child: ElevatedButton(
-                onPressed: () {},
+                onPressed: () => _pickImageFromPhoneGallery(),
                 child: const Text('Ajouter une photo'),
               ),
             ),
@@ -217,7 +243,7 @@ class _LocationPageState extends State<LocationPage> {
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () {
           BlocProvider.of<LocationBloc>(context).add(UpdateLocation(name.text, date, note.text, imageURLList, id, latitude, longitude));
-          Navigator.pop(context);
+          Navigator.pop(context, true);
         },
         label: const Text('Enregistrer les modifications'),
         icon: const Icon(Icons.update),

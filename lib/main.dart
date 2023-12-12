@@ -1,14 +1,18 @@
+import 'dart:ui';
+
+import 'package:explore_and_remember/InformationLocationPage.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'AddLocationPage.dart';
+import 'AllPicturesPage.dart';
 import 'MapPage.dart';
 import 'blocs/LocationBloc/loc_bloc.dart';
 import 'blocs/LocationBloc/loc_events.dart';
 import 'blocs/LocationBloc/loc_states.dart';
 import 'firebase/firebase_options.dart';
 import 'Location.dart';
-import 'LocationPage.dart';
+import 'UpdateLocationPage.dart';
 import 'firebase/firestore_service.dart';
 
 void main() async {
@@ -103,7 +107,14 @@ class _MyHomePageState extends State<MyHomePage> {
             ),
             ListTile(
               title: const Text('PHOTOS'),
-              onTap: () {},
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => const AllPicturesPage(),
+                  ),
+                );
+              },
             ),
             ListTile(
               title: const Text('SAUVEGARDEES'),
@@ -129,7 +140,7 @@ class _MyHomePageState extends State<MyHomePage> {
         builder: (context, state) {
           if (state is LocationLoading) {
             return const CircularProgressIndicator();
-          } else if (state is LocationLoaded) {
+          } else if (state is LocationsLoaded) {
             final List<Location> locations = state.locations;
             return ListView.builder(
               itemCount: locations.length,
@@ -147,7 +158,7 @@ class _MyHomePageState extends State<MyHomePage> {
                             Navigator.push(
                               context,
                               MaterialPageRoute(
-                                builder: (context) => LocationPage(
+                                builder: (context) => InformationLocationPage(
                                   location: location,
                                 ),
                               ),
@@ -161,10 +172,13 @@ class _MyHomePageState extends State<MyHomePage> {
                             context: context,
                             builder: (BuildContext context) {
                               return Dialog(
-                                child: Image.network(
-                                  location.getFirstImage()!,
-                                  fit: BoxFit.contain,
-                                ),
+                                  child: BackdropFilter(
+                                    filter: ImageFilter.blur(sigmaX: 2, sigmaY: 2),
+                                    child: Image.network(
+                                      location.getFirstImage()!,
+                                      fit: BoxFit.contain,
+                                    ),
+                                  )
                               );
                             },
                           );
@@ -205,7 +219,5 @@ class _MyHomePageState extends State<MyHomePage> {
       ),
     );
   }
-
-
 }
 

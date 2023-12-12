@@ -87,4 +87,23 @@ class FirestoreService {
       }
     }
   }
+
+  getLocationInformation(String locationId) {
+    try {
+      return locationsCollection.doc(locationId).get().then((doc) {
+        final data = doc.data();
+        return Location(
+          id: doc.id,
+          name: data!['Name'],
+          date: data['Date'],
+          note: data['Note'],
+          imageURLList: List<String>.from(data['ImageURLs']), // convertie la liste dynamique en liste de String
+          latitude: data['Latitude'],
+          longitude: data['Longitude'],
+        );
+      });
+    } catch (e) {
+      throw Exception(e.toString());
+    }
+  }
 }

@@ -33,7 +33,7 @@ class DeleteLocation extends LocationEvent {
   DeleteLocation(this.location);
 }
 
-class GetLocationName extends LocationEvent {
-  final String locationName;
-  GetLocationName(this.locationName);
+class GetLocationInformation extends LocationEvent {
+  final String locationId;
+  GetLocationInformation(this.locationId);
 }
