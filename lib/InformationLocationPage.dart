@@ -59,6 +59,7 @@ class _InformationLocationPageState extends State<InformationLocationPage> {
     // On récupère les bytes de l'image
     final bytes = response.bodyBytes;
 
+
     // On récupère le nom unique de l'image
     final uniqueFileName = imageURL.split('/').last;
 
@@ -69,9 +70,8 @@ class _InformationLocationPageState extends State<InformationLocationPage> {
     Reference imageSavedReference = FirebaseStorage.instance.ref().child('saved/$uniqueFileName.$ext');
 
     // On sauvegarde l'image
-    await imageSavedReference.putData(bytes);
+    await imageSavedReference.putData(bytes, SettableMetadata(contentType: 'image/$ext'));
   }
-
 
   @override
   Widget build(BuildContext context) {
@@ -79,6 +79,7 @@ class _InformationLocationPageState extends State<InformationLocationPage> {
       appBar: AppBar(
         backgroundColor: Theme.of(context).colorScheme.inversePrimary,
         title: Text(name),
+        automaticallyImplyLeading: false,
         actions: [
           IconButton(
             icon: const Icon(Icons.edit),
@@ -92,20 +93,6 @@ class _InformationLocationPageState extends State<InformationLocationPage> {
                 ),
               );
             },
-            /*onPressed: () async {
-              bool changes = await Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) => UpdateLocationPage(
-                    location: location,
-                  ),
-                ),
-              );
-              if (changes) {
-                // Permet de récupérer les nouvelles informations du lieu après modification sur la page de modification
-                BlocProvider.of<LocationBloc>(context).add(GetLocationInformation(location.id));
-              }
-            },*/
           ),
         ],
       ),
@@ -165,6 +152,9 @@ class _InformationLocationPageState extends State<InformationLocationPage> {
                                       IconButton(
                                         icon: const Icon(Icons.delete),
                                         onPressed: () {
+                                          final imageURL = imageURLList[currentIndex];
+                                          final idLocation = location.getID;
+                                          BlocProvider.of<LocationBloc>(context).add(DeleteImageFromFirebaseStorageAndDB(imageURL, imageURLList, idLocation));
                                           Navigator.pop(context);
                                         },
                                       ),
@@ -174,7 +164,6 @@ class _InformationLocationPageState extends State<InformationLocationPage> {
                               ),
                             ),
                           );
-
                         },
                       );
                     },

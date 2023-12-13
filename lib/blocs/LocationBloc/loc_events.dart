@@ -38,9 +38,11 @@ class DeleteImagesFromFirebaseStorage extends LocationEvent {
   DeleteImagesFromFirebaseStorage(this.imageURLList);
 }
 
-class DeleteImageFromFirebaseStorage extends LocationEvent {
+class DeleteImageFromFirebaseStorageAndDB extends LocationEvent {
   final String imageURL;
-  DeleteImageFromFirebaseStorage(this.imageURL);
+  final List<String> imageURLList;
+  final String idLocation;
+  DeleteImageFromFirebaseStorageAndDB(this.imageURL, this.imageURLList, this.idLocation);
 }
 
 class GetLocationInformation extends LocationEvent {

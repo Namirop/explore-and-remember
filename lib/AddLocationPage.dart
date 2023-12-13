@@ -102,93 +102,95 @@ class _AddLocationPageState extends State<AddLocationPage> {
       appBar: AppBar(
         title: const Text('Ajouter une location'),
       ),
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              children: [
-                const Text(
-                  'Nom du lieu : ',
-                  style: TextStyle(fontWeight: FontWeight.bold),
-                ),
-                Flexible(
-                  child: TextField(
-                      controller: name,
-                      focusNode: focusNode
+      body: SingleChildScrollView(
+        child: Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                children: [
+                  const Text(
+                    'Nom du lieu : ',
+                    style: TextStyle(fontWeight: FontWeight.bold),
                   ),
-                ),
-                IconButton(
-                  icon: const Icon(Icons.search),
-                  onPressed: () {
-                    final locationQuery = name.text;
-                    _searchPlaces(locationQuery);
-                    focusNode.unfocus();
+                  Flexible(
+                    child: TextField(
+                      controller: name,
+                      focusNode: focusNode,
+                    ),
+                  ),
+                  IconButton(
+                    icon: const Icon(Icons.search),
+                    onPressed: () {
+                      final locationQuery = name.text;
+                      _searchPlaces(locationQuery);
+                      focusNode.unfocus();
+                    },
+                  ),
+                ],
+              ),
+              const SizedBox(height: 16.0),
+              Row(
+                children: [
+                  const Text(
+                    'Date de visite :',
+                    style: TextStyle(fontWeight: FontWeight.bold),
+                  ),
+                  Container(
+                    margin: const EdgeInsets.only(left: 2.0),
+                    child: IconButton(
+                      icon: const Icon(Icons.today),
+                      onPressed: () => _selectDate(context),
+                    ),
+                  ),
+                ],
+              ),
+              Text('${date.day}/${date.month}/${date.year}'),
+              const SizedBox(height: 16.0),
+              const Text(
+                'Notes : ',
+                style: TextStyle(fontWeight: FontWeight.bold),
+              ),
+              TextField(controller: note),
+              const SizedBox(height: 16.0),
+              const Text(
+                'Carte : ',
+                style: TextStyle(fontWeight: FontWeight.bold),
+              ),
+              const SizedBox(height: 16.0),
+              SizedBox(
+                height: 200,
+                child: GoogleMap(
+                  onMapCreated: (GoogleMapController controller) {
+                    mapController = controller;
+                  },
+                  initialCameraPosition: CameraPosition(
+                    target: LatLng(latitude, longitude),
+                    zoom: 1,
+                  ),
+                  markers: {
+                    Marker(
+                      markerId: MarkerId(name.text),
+                      position: LatLng(latitude, longitude),
+                    ),
                   },
                 ),
-              ],
-            ),
-            const SizedBox(height: 16.0),
-            Row(
-              children: [
-                const Text(
-                  'Date de visite :',
-                  style: TextStyle(fontWeight: FontWeight.bold),
-                ),
-                Container(
-                  margin: const EdgeInsets.only(left: 2.0),
-                  child: IconButton(
-                    icon: const Icon(Icons.today),
-                    onPressed: () => _selectDate(context),
-                  ),
-                ),
-              ],
-            ),
-            Text('${date.day}/${date.month}/${date.year}'),
-            const SizedBox(height: 16.0),
-            const Text(
-              'Notes : ',
-              style: TextStyle(fontWeight: FontWeight.bold),
-            ),
-            TextField(controller: note),
-            const SizedBox(height: 16.0),
-            const Text(
-              'Carte : ',
-              style: TextStyle(fontWeight: FontWeight.bold),
-            ),
-            const SizedBox(height: 16.0),
-            SizedBox(
-              height: 200,
-              child: GoogleMap(
-                onMapCreated: (GoogleMapController controller) {
-                  mapController = controller;
-                },
-                initialCameraPosition: CameraPosition(
-                  target: LatLng(latitude, longitude),
-                  zoom: 1,
-                ),
-                markers: {
-                  Marker(
-                    markerId: MarkerId(name.text),
-                    position: LatLng(latitude, longitude)
-                  ),
-                }
               ),
-            ),
-            const SizedBox(height: 16.0),
-            const Text(
-              'Photos :',
-              style: TextStyle(fontWeight: FontWeight.bold),
-            ),
-            Container(
-              margin: const EdgeInsets.only(top: 16.0),
-              child: ElevatedButton(
-                onPressed: _pickImageFromPhoneGallery,
-                child: const Text('Ajouter une photo'),
+              const SizedBox(height: 16.0),
+              const Text(
+                'Photos :',
+                style: TextStyle(fontWeight: FontWeight.bold),
               ),
-            ),
-          ],
+              Container(
+                margin: const EdgeInsets.only(top: 16.0),
+                child: ElevatedButton(
+                  onPressed: _pickImageFromPhoneGallery,
+                  child: const Text('Ajouter une photo'),
+                ),
+              ),
+            ],
+          ),
         ),
       ),
       floatingActionButton: FloatingActionButton.extended(
@@ -203,4 +205,5 @@ class _AddLocationPageState extends State<AddLocationPage> {
       ),
     );
   }
+
 }

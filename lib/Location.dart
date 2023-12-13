@@ -22,11 +22,11 @@ class Location {
   String get getDate => date;
   String get getNote => note;
   String get getID => id;
+  double get getLongitude => longitude;
+  double get getLatitude => latitude;
   List<String> getImageURLs() {
     return List.from(imageURLList);
   }
-  double get getLongitude => longitude;
-  double get getLatitude => latitude;
 
   String? getFirstImage() {
     if (imageURLList.isNotEmpty) {

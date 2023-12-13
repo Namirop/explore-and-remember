@@ -32,7 +32,6 @@ class _UpdateLocationPageState extends State<UpdateLocationPage> {
   late TextEditingController name;
   late DateTime date;
   late TextEditingController note;
-  late TextEditingController gps = TextEditingController(text: "Fonctionnalité non implémentée");
   late String id;
   late List<String> imageURLList = [];
   late double longitude;
@@ -127,8 +126,6 @@ class _UpdateLocationPageState extends State<UpdateLocationPage> {
 
   @override
   Widget build(BuildContext context) {
-    print("Latitude : $latitude");
-    print("Longitude : $longitude");
     return Scaffold(
       appBar: AppBar(
         backgroundColor: Theme
@@ -154,70 +151,71 @@ class _UpdateLocationPageState extends State<UpdateLocationPage> {
           ),
         ],
       ),
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              children: [
-                const Text(
-                  'Nom du lieu : ',
-                  style: TextStyle(fontWeight: FontWeight.bold),
-                ),
-                Flexible(
-                  child: TextField(
-                    controller: name,
-                    decoration: InputDecoration(
-                      hintText: location.getName,
+      body: SingleChildScrollView(
+        child: Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                children: [
+                  const Text(
+                    'Nom du lieu : ',
+                    style: TextStyle(fontWeight: FontWeight.bold),
+                  ),
+                  Flexible(
+                    child: TextField(
+                      controller: name,
+                      decoration: InputDecoration(
+                        hintText: location.getName,
+                      ),
                     ),
                   ),
-                ),
-                IconButton(
-                  icon: const Icon(Icons.search),
-                  onPressed: () {
-                    _searchPlaces(name.text);
-                  },
-                ),
-              ],
-            ),
-            const SizedBox(height: 16.0),
-            Row(
-              children: [
-                const Text(
-                  'Date de visite :',
-                  style: TextStyle(fontWeight: FontWeight.bold),
-                ),
-                Container(
-                  margin: const EdgeInsets.only(left: 2.0),
-                  child: IconButton(
-                    icon: const Icon(Icons.today),
-                    onPressed: () => _selectDate(context),
+                  IconButton(
+                    icon: const Icon(Icons.search),
+                    onPressed: () {
+                      _searchPlaces(name.text);
+                    },
                   ),
-                ),
-              ],
-            ),
-            Text('${date.day}/${date.month}/${date.year}'),
-            const SizedBox(height: 16.0),
-            const Text(
-              'Notes : ',
-              style: TextStyle(fontWeight: FontWeight.bold),
-            ),
-            TextField(
+                ],
+              ),
+              const SizedBox(height: 16.0),
+              Row(
+                children: [
+                  const Text(
+                    'Date de visite :',
+                    style: TextStyle(fontWeight: FontWeight.bold),
+                  ),
+                  Container(
+                    margin: const EdgeInsets.only(left: 2.0),
+                    child: IconButton(
+                      icon: const Icon(Icons.today),
+                      onPressed: () => _selectDate(context),
+                    ),
+                  ),
+                ],
+              ),
+              Text('${date.day}/${date.month}/${date.year}'),
+              const SizedBox(height: 16.0),
+              const Text(
+                'Notes : ',
+                style: TextStyle(fontWeight: FontWeight.bold),
+              ),
+              TextField(
                 controller: note,
                 decoration: InputDecoration(
                   hintText: location.getNote,
-                )
-            ),
-            const SizedBox(height: 16.0),
-            const Text(
-              'Carte : ',
-              style: TextStyle(fontWeight: FontWeight.bold),
-            ),
-            const SizedBox(height: 16.0),
-            SizedBox(
-              height: 200,
-              child: GoogleMap(
+                ),
+              ),
+              const SizedBox(height: 16.0),
+              const Text(
+                'Carte : ',
+                style: TextStyle(fontWeight: FontWeight.bold),
+              ),
+              const SizedBox(height: 16.0),
+              SizedBox(
+                height: 200,
+                child: GoogleMap(
                   onMapCreated: (GoogleMapController controller) {
                     mapController = controller;
                   },
@@ -225,28 +223,28 @@ class _UpdateLocationPageState extends State<UpdateLocationPage> {
                     target: LatLng(latitude, longitude),
                     zoom: 10,
                   ),
-                  markers:
-                  {
+                  markers: {
                     Marker(
-                        markerId: MarkerId(name.text),
-                        position: LatLng(latitude, longitude)
+                      markerId: MarkerId(name.text),
+                      position: LatLng(latitude, longitude),
                     ),
-                  }
+                  },
+                ),
               ),
-            ),
-            const SizedBox(height: 16.0),
-            const Text(
-              'Photos :',
-              style: TextStyle(fontWeight: FontWeight.bold),
-            ),
-            Container(
-              margin: const EdgeInsets.only(top: 16.0),
-              child: ElevatedButton(
-                onPressed: () => _pickImageFromPhoneGallery(),
-                child: const Text('Ajouter une photo'),
+              const SizedBox(height: 16.0),
+              const Text(
+                'Photos :',
+                style: TextStyle(fontWeight: FontWeight.bold),
               ),
-            ),
-          ],
+              Container(
+                margin: const EdgeInsets.only(top: 16.0),
+                child: ElevatedButton(
+                  onPressed: () => _pickImageFromPhoneGallery(),
+                  child: const Text('Ajouter une photo'),
+                ),
+              ),
+            ],
+          ),
         ),
       ),
       floatingActionButton: FloatingActionButton.extended(

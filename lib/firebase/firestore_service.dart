@@ -76,8 +76,23 @@ class FirestoreService {
         // On récupère le dernier segment de l'URL
         String filePath = uri.pathSegments.last;
 
+        List<String> firstSegment = filePath.split('/');
+        String uniqueFileNameAndExtension = firstSegment.last;
+        List<String> secondSegment = uniqueFileNameAndExtension.split('.');
+        String uniqueFileName = secondSegment.first;
+
+        Reference savedImageReference = FirebaseStorage.instance.ref().child('saved');
+        ListResult savedImagesList = await savedImageReference.listAll();
+        for (var image in savedImagesList.items) {
+          if (image.name.contains(uniqueFileName)) {
+            await image.delete();
+            print("Image ${image.name} supprimée du dossier saved");
+          }
+        }
+
         Reference imageReference = FirebaseStorage.instance.ref().child(filePath);
         await imageReference.delete();
+        print("Image $uniqueFileName supprimée du dossier images");
 
       } catch (e) {
         throw Exception(e.toString());
@@ -85,13 +100,38 @@ class FirestoreService {
     }
   }
 
-  Future<void> deleteImageFromFirebaseStorage(String imageURL) async {
+  Future<void> deleteImageFromFirebaseStorageAndDB(String imageURL, List<String> imageURLList, String idLocation) async {
     try {
       Uri uri = Uri.parse(imageURL);
       String filePath = uri.pathSegments.last;
+      List<String> firstSegment = filePath.split('/');
+      String uniqueFileNameAndExtension = firstSegment.last;
+      List<String> secondSegment = uniqueFileNameAndExtension.split('.');
+      // On récupère le nom unique que l'on a attribué à l'image
+      String uniqueFileName = secondSegment.first;
 
+      // On supprime l'image du dossier 'saved' si elle y est
+      Reference savedImageReference = FirebaseStorage.instance.ref().child('saved');
+      ListResult savedImagesList = await savedImageReference.listAll();
+      for (var image in savedImagesList.items) {
+        if (image.name.contains(uniqueFileName)) {
+          await image.delete();
+          print("Image ${image.name} supprimée du dossier saved");
+        }
+      }
+
+      // On supprime l'image du dossier 'images'
       Reference imageReference = FirebaseStorage.instance.ref().child(filePath);
       await imageReference.delete();
+      print("Image $uniqueFileName supprimée du dossier images");
+
+      // On supprime l'image de la liste des images de la base de données
+      imageURLList.remove(imageURL);
+
+      // On met à jour la base de données
+      await locationsCollection.doc(idLocation).update({
+        'ImageURLs': imageURLList,
+      });
 
     } catch (e) {
       throw Exception(e.toString());

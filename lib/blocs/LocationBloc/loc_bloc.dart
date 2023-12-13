@@ -55,10 +55,10 @@ class LocationBloc extends Bloc<LocationEvent, LocationState> {
       }
     });
 
-    on<DeleteImageFromFirebaseStorage>((event, emit) async {
+    on<DeleteImageFromFirebaseStorageAndDB>((event, emit) async {
       emit(LocationLoading());
       try {
-        await _firestoreService.deleteImageFromFirebaseStorage(event.imageURL);
+        await _firestoreService.deleteImageFromFirebaseStorageAndDB(event.imageURL, event.imageURLList, event.idLocation);
       } catch (e) {
         emit(LocationError("Suppression de l'image impossible : $e"));
       }
