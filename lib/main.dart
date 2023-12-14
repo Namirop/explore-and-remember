@@ -69,27 +69,55 @@ class _MyHomePageState extends State<MyHomePage> {
     return Scaffold(
 
       appBar: AppBar(
-        backgroundColor: Theme.of(context).colorScheme.inversePrimary,
-        title: Text(widget.title),
+        backgroundColor: Colors.transparent,
+        flexibleSpace: Container(
+          decoration: const BoxDecoration(
+            gradient: LinearGradient(
+              begin: Alignment.topCenter,
+              end: Alignment.bottomCenter,
+              colors: [
+                Color(0xC3A2CDFA),
+                Color(0xC30B6A85),
+              ],
+            ),
+          ),
+        ),
+        title: Text(
+          widget.title.toUpperCase(),
+          style: const TextStyle(
+            fontWeight: FontWeight.bold,
+          ),
+        ),
       ),
 
       drawer: Drawer(
         child: ListView(
           padding: EdgeInsets.zero,
           children: [
-            const DrawerHeader(
-              decoration: BoxDecoration(
-                color: Colors.deepPurple,
-              ),
-              child: Text(
-                'Explorer and Remember',
-                style: TextStyle(
-                  color: Colors.white,
-                  fontSize: 24,
+            const SizedBox(
+              height: 150,
+              child: DrawerHeader(
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    begin: Alignment.topCenter,
+                    end: Alignment.bottomCenter,
+                    colors: [
+                      Color(0xC3A2CDFA),
+                      Color(0xC30B6A85),
+                    ],
+                  ),
+                ),
+                child: Text(
+                  'EXPLORER AND REMEMBER',
+                  style: TextStyle(
+                    color: Colors.black,
+                    fontSize: 20,
+                  ),
                 ),
               ),
             ),
             ListTile(
+              leading: const Icon(Icons.home),
               title: const Text('LISTE DES LIEUX'),
               onTap: () {
                 Navigator.push(
@@ -101,6 +129,7 @@ class _MyHomePageState extends State<MyHomePage> {
               },
             ),
             ListTile(
+              leading: const Icon(Icons.photo),
               title: const Text('PHOTOS'),
               onTap: () {
                 Navigator.push(
@@ -112,6 +141,7 @@ class _MyHomePageState extends State<MyHomePage> {
               },
             ),
             ListTile(
+              leading: const Icon(Icons.star),
               title: const Text('SAUVEGARDEES'),
               onTap: () {
                 Navigator.push(
@@ -123,6 +153,7 @@ class _MyHomePageState extends State<MyHomePage> {
               },
             ),
             ListTile(
+              leading: const Icon(Icons.map),
               title: const Text('CARTES DES LIEUX'),
               onTap: () {
                 Navigator.push(
@@ -138,6 +169,7 @@ class _MyHomePageState extends State<MyHomePage> {
           ],
         )
       ),
+
 
       body: BlocBuilder<LocationBloc, LocationState>(
         builder: (context, state) {
@@ -176,7 +208,7 @@ class _MyHomePageState extends State<MyHomePage> {
                             builder: (BuildContext context) {
                               return Dialog(
                                   child: BackdropFilter(
-                                    filter: ImageFilter.blur(sigmaX: 2, sigmaY: 2),
+                                    filter: ImageFilter.blur(sigmaX: 0, sigmaY: 0),
                                     child: Image.network(
                                       location.getFirstImage()!,
                                       fit: BoxFit.contain,
@@ -221,6 +253,7 @@ class _MyHomePageState extends State<MyHomePage> {
         },
         label: const Text('Ajouter un lieu'),
         icon: const Icon(Icons.add),
+        backgroundColor: const Color(0xC3A2CDFA),
       ),
     );
   }

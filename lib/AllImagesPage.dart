@@ -20,8 +20,8 @@ class _AllImagesPageState extends State<AllImagesPage> {
 
   getAllImagesURLs() {
       Reference imageReference = FirebaseStorage.instance.ref().child('images');
-      imageReference.listAll().then((value) {
-        for (var image in value.items) {
+      imageReference.listAll().then((imagesURLList) {
+        for (var image in imagesURLList.items) {
           image.getDownloadURL().then((value) {
             setState(() {
               allImagesURLList.add(value);
@@ -35,8 +35,26 @@ class _AllImagesPageState extends State<AllImagesPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        backgroundColor: Theme.of(context).colorScheme.inversePrimary,
-        title: const Text('All Pictures'),
+        title: const Text("ALL IMAGES",
+            style: TextStyle(
+              color: Colors.black,
+              fontWeight: FontWeight.bold,
+            )
+        ),
+        centerTitle: true,
+        backgroundColor: Colors.transparent,
+        flexibleSpace: Container(
+          decoration: const BoxDecoration(
+            gradient: LinearGradient(
+              begin: Alignment.topCenter,
+              end: Alignment.bottomCenter,
+              colors: [
+                Color(0xC3A2CDFA),
+                Color(0xC30B6A85),
+              ],
+            ),
+          ),
+        ),
       ),
       body: Center(
         child: Column(
@@ -47,7 +65,9 @@ class _AllImagesPageState extends State<AllImagesPage> {
                 itemBuilder: (context, index) {
                   return Padding(
                     padding: const EdgeInsets.all(8.0),
-                    child: Image.network(allImagesURLList[index]),
+                    child: Image.network(
+                        allImagesURLList[index]
+                    ),
                   );
                 },
               ),

@@ -20,8 +20,8 @@ class _SavedImagesPageState extends State<SavedImagesPage> {
 
   getSavedImagesURLs() {
     Reference imageReference = FirebaseStorage.instance.ref().child('saved');
-    imageReference.listAll().then((value) {
-      for (var image in value.items) {
+    imageReference.listAll().then((savedImageURLList) {
+      for (var image in savedImageURLList.items) {
         image.getDownloadURL().then((value) {
           setState(() {
             savedImagesURLList.add(value);
@@ -36,8 +36,26 @@ class _SavedImagesPageState extends State<SavedImagesPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        backgroundColor: Theme.of(context).colorScheme.inversePrimary,
-        title: const Text('Saved Pictures'),
+        title: const Text("SAVED IMAGES",
+            style: TextStyle(
+              color: Colors.black,
+              fontWeight: FontWeight.bold,
+            )
+        ),
+        centerTitle: true,
+        backgroundColor: Colors.transparent,
+        flexibleSpace: Container(
+          decoration: const BoxDecoration(
+            gradient: LinearGradient(
+              begin: Alignment.topCenter,
+              end: Alignment.bottomCenter,
+              colors: [
+                Color(0xC3A2CDFA),
+                Color(0xC30B6A85),
+              ],
+            ),
+          ),
+        ),
       ),
       body: Center(
         child: Column(

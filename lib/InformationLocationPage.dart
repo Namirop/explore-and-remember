@@ -1,4 +1,3 @@
-import 'dart:io';
 import 'dart:ui';
 import 'package:explore_and_remember/UpdateLocationPage.dart';
 import 'package:firebase_storage/firebase_storage.dart';
@@ -59,7 +58,6 @@ class _InformationLocationPageState extends State<InformationLocationPage> {
     // On récupère les bytes de l'image
     final bytes = response.bodyBytes;
 
-
     // On récupère le nom unique de l'image
     final uniqueFileName = imageURL.split('/').last;
 
@@ -77,24 +75,21 @@ class _InformationLocationPageState extends State<InformationLocationPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        backgroundColor: Theme.of(context).colorScheme.inversePrimary,
-        title: Text(name),
-        automaticallyImplyLeading: false,
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.edit),
-            onPressed: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) => UpdateLocationPage(
-                    location: location,
-                  ),
-                ),
-              );
-            },
+        backgroundColor: Colors.transparent,
+        flexibleSpace: Container(
+          decoration: const BoxDecoration(
+            gradient: LinearGradient(
+              begin: Alignment.topCenter,
+              end: Alignment.bottomCenter,
+              colors: [
+                Color(0xC3A2CDFA),
+                Color(0xC30B6A85),
+              ],
+            ),
           ),
-        ],
+        ),
+        toolbarHeight: 1,
+        automaticallyImplyLeading: false,
       ),
       body: BlocBuilder<LocationBloc, LocationState>(
         builder: (context, state) {
@@ -113,55 +108,51 @@ class _InformationLocationPageState extends State<InformationLocationPage> {
           }
           return SingleChildScrollView(
             child: Padding(
-              padding: const EdgeInsets.all(16.0),
+              padding: const EdgeInsets.all(0.0),
               child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Text(
-                    'Photos : ',
-                    style: TextStyle(fontWeight: FontWeight.bold),
-                  ),
-                  const SizedBox(height: 16.0),
                   GestureDetector(
                     onTap: () {
                       showDialog(
                         context: context,
                         builder: (BuildContext context) {
                           return Dialog(
-                            child: BackdropFilter(
-                              filter: ImageFilter.blur(sigmaX: 1, sigmaY: 1),
-                              child: Column(
-                                mainAxisSize: MainAxisSize.min,
-                                children: [
-                                  Image.network(
-                                    imageURLList[currentIndex],
-                                    fit: BoxFit.contain,
-                                  ),
-                                  const SizedBox(height: 16.0),
-                                  Row(
-                                    mainAxisAlignment: MainAxisAlignment.spaceAround,
-                                    children: [
-                                      IconButton(
-                                        icon: const Icon(Icons.save),
-                                        onPressed: () {
-                                          final imageURL = imageURLList[currentIndex];
-                                          _saveImage(imageURL);
-                                          Navigator.pop(context);
-                                        },
-                                      ),
-                                      IconButton(
-                                        icon: const Icon(Icons.delete),
-                                        onPressed: () {
-                                          final imageURL = imageURLList[currentIndex];
-                                          final idLocation = location.getID;
-                                          BlocProvider.of<LocationBloc>(context).add(DeleteImageFromFirebaseStorageAndDB(imageURL, imageURLList, idLocation));
-                                          Navigator.pop(context);
-                                        },
-                                      ),
-                                    ],
-                                  ),
-                                ],
-                              ),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(10.0),
+                            ),
+                            backgroundColor: const Color(0xA2CDFAFF),
+                            child: Column(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Image.network(
+                                  imageURLList[currentIndex],
+                                  fit: BoxFit.contain,
+                                ),
+                                const SizedBox(height: 16.0),
+                                Row(
+                                  mainAxisAlignment: MainAxisAlignment.spaceAround,
+                                  children: [
+                                    IconButton(
+                                      icon: const Icon(Icons.save),
+                                      onPressed: () {
+                                        final imageURL = imageURLList[currentIndex];
+                                        _saveImage(imageURL);
+                                        Navigator.pop(context);
+                                      },
+                                    ),
+                                    IconButton(
+                                      icon: const Icon(Icons.delete),
+                                      onPressed: () {
+                                        final imageURL = imageURLList[currentIndex];
+                                        final idLocation = location.getID;
+                                        BlocProvider.of<LocationBloc>(context)
+                                            .add(DeleteImageFromFirebaseStorageAndDB(imageURL, imageURLList, idLocation));
+                                        Navigator.pop(context);
+                                      },
+                                    ),
+                                  ],
+                                ),
+                              ],
                             ),
                           );
                         },
@@ -171,7 +162,6 @@ class _InformationLocationPageState extends State<InformationLocationPage> {
                       height: 200,
                       child: PageView.builder(
                         itemCount: imageURLList.length,
-                        // dès que l'on change de photo, le nouvel index devient le courant
                         onPageChanged: (index) {
                           setState(() {
                             currentIndex = index;
@@ -186,28 +176,140 @@ class _InformationLocationPageState extends State<InformationLocationPage> {
                       ),
                     ),
                   ),
-                  const SizedBox(height: 16.0),
-                  const Text(
-                    'Notes : ',
-                    style: TextStyle(fontWeight: FontWeight.bold),
+
+                  Container(
+                    padding: const EdgeInsets.all(8.0),
+                    margin: const EdgeInsets.all(12.0),
+                    decoration: BoxDecoration(
+                      border: Border.all(color: Colors.grey.shade300),
+                      // réduire solidité de la bordure
+                      borderRadius: BorderRadius.circular(10.0),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.grey.shade400.withOpacity(0.25),
+                          spreadRadius: 2,
+                          blurRadius: 5,
+                        ),
+                      ],
+                    ),
+                    child: Row(
+                      children: [
+                        const Padding(
+                          padding: EdgeInsets.only(right: 16.0),
+                          child: Icon(
+                            Icons.location_on,
+                            size: 45,
+                            color: Colors.blue,
+                          ),
+                        ),
+                        Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              name,
+                              style: const TextStyle(
+                                fontWeight: FontWeight.bold,
+                                fontSize: 20.0,
+                              ),
+                            ),
+                            const SizedBox(height: 4.0),
+                            Text(
+                              '${date.day}/${date.month}/${date.year}',
+                              style: const TextStyle(
+                                fontSize: 14.0,
+                                color: Colors.grey,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
                   ),
-                  const SizedBox(height: 16.0),
-                  Text(note),
-                  const SizedBox(height: 16.0),
-                  const Text(
-                    'Date de visite : ',
-                    style: TextStyle(fontWeight: FontWeight.bold),
+
+                  Container(
+                    padding: const EdgeInsets.symmetric(vertical: 8.0),
+                    margin: const EdgeInsets.symmetric(horizontal: 16.0),
+                    child: const Row(
+                      children: [
+                        Padding(
+                          padding: EdgeInsets.only(right: 16.0),
+                          child: Icon(
+                            Icons.notes,
+                            size: 45,
+                            color: Colors.blue,
+                          ),
+                        ),
+                        Text(
+                          'NOTES : ',
+                          style: TextStyle(
+                            fontWeight: FontWeight.bold,
+                            fontSize: 18.0,
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
-                  const SizedBox(height: 16.0),
-                  Text('${date.day}/${date.month}/${date.year}'),
-                  const SizedBox(height: 16.0),
-                  const Text(
-                    'Carte : ',
-                    style: TextStyle(fontWeight: FontWeight.bold),
+
+                  Container(
+                    width: double.infinity,
+                    padding: const EdgeInsets.all(8.0),
+                    margin: const EdgeInsets.all(12.0),
+                    decoration: BoxDecoration(
+                      border: Border.all(color: Colors.grey.shade300),
+                      // réduire solidité de la bordure
+                      borderRadius: BorderRadius.circular(10.0),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.grey.shade400.withOpacity(0.25),
+                          spreadRadius: 2,
+                          blurRadius: 5,
+                        ),
+                      ],
+                    ),
+                    child: Text(
+                      note,
+                      style: const TextStyle(
+                        fontSize: 16.0,
+                      ),
+                    ),
                   ),
-                  const SizedBox(height: 16.0),
-                  SizedBox(
-                    height: 200,
+
+                  Container(
+                    padding: const EdgeInsets.symmetric(vertical: 8.0),
+                    margin: const EdgeInsets.symmetric(horizontal: 16.0),
+                    child: const Row(
+                      children: [
+                        Padding(
+                          padding: EdgeInsets.only(right: 16.0),
+                          child: Icon(
+                            Icons.map,
+                            size: 40,
+                            color: Colors.blue,
+                          ),
+                        ),
+                        Text(
+                          'CARTES : ',
+                          style: TextStyle(
+                            fontWeight: FontWeight.bold,
+                            fontSize: 18.0,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+
+                  Container(
+                    margin: const EdgeInsets.all(14.0),
+                    height: 250,
+                    decoration: const BoxDecoration(
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.grey,
+                          blurRadius: 5.0,
+                          offset: Offset(2, 6),
+                        ),
+                      ],
+                    ),
                     child: GoogleMap(
                       onMapCreated: (GoogleMapController controller) {
                         mapController = controller;
@@ -224,26 +326,53 @@ class _InformationLocationPageState extends State<InformationLocationPage> {
                       },
                     ),
                   ),
+
+                  Container(
+                    margin: const EdgeInsets.all(8.0),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        FloatingActionButton.extended(
+                          onPressed: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => const MyHomePage(
+                                  title: 'Explorer and Remember',
+                                ),
+                              ),
+                            );
+                          },
+                          label: const Text(''),
+                          icon: const Icon(Icons.arrow_back),
+                          backgroundColor: const Color(0xC3A2CDFA),
+                        ),
+                        const SizedBox(width: 16.0),
+                        FloatingActionButton.extended(
+                          onPressed: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => UpdateLocationPage(
+                                  location: location,
+                                ),
+                              ),
+                            );
+                          },
+                          label: const Text('MODIFIER CE LIEU'),
+                          icon: const Icon(Icons.edit),
+                          backgroundColor: const Color(0xC3A2CDFA),
+                        ),
+                      ],
+                    ),
+                  ),
                 ],
               ),
             ),
           );
         },
       ),
-      floatingActionButton: FloatingActionButton.extended(
-        onPressed: () {
-          Navigator.push(
-            context,
-            MaterialPageRoute(
-              builder: (context) => const MyHomePage(
-                title: 'Explorer and Remember',
-              ),
-            ),
-          );
-        },
-        label: const Text('Retour'),
-        icon: const Icon(Icons.arrow_back),
-      ),
     );
   }
+
 }

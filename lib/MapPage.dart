@@ -28,9 +28,26 @@ class _MapPageState extends State<MapPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text(widget.title, style: const TextStyle(color: Colors.white)),
+        title: Text(widget.title.toUpperCase(),
+            style: const TextStyle(
+                color: Colors.black,
+                fontWeight: FontWeight.bold,
+            )
+        ),
         centerTitle: true,
-        backgroundColor: Colors.deepPurple,
+        backgroundColor: Colors.transparent,
+        flexibleSpace: Container(
+          decoration: const BoxDecoration(
+            gradient: LinearGradient(
+              begin: Alignment.topCenter,
+              end: Alignment.bottomCenter,
+              colors: [
+                Color(0xC3A2CDFA),
+                Color(0xC30B6A85),
+              ],
+            ),
+          ),
+        ),
       ),
       body: BlocBuilder<LocationBloc, LocationState>(
         builder: (context, state) {
@@ -54,7 +71,9 @@ class _MapPageState extends State<MapPage> {
               )).toSet(),
             );
           } else {
-            return const Center(child: Text('Something went wrong!'));
+            return const Center(
+                child: Text("Erreur lors du chargement des lieux")
+            );
           }
         },
       ),

@@ -50,9 +50,11 @@ class _AddLocationPageState extends State<AddLocationPage> {
       for (var image in pickedImagesFromGallery) {
         String uniqueFileName = DateTime.now().millisecondsSinceEpoch.toString();
         final ext = image.path.split('.').last;
-        Reference imageReference =
-        FirebaseStorage.instance.ref().child('images/$uniqueFileName.$ext');
+        // on crée la référence de l'image dans le storage, l'endroit où elle sera stockée
+        Reference imageReference = FirebaseStorage.instance.ref().child('images/$uniqueFileName.$ext');
+        // on crée un fichier à partir de l'image récupérée
         File imageFile = File(image.path);
+        // on upload l'image dans le storage
         await imageReference.putFile(imageFile, SettableMetadata(contentType: 'image/$ext'));
         final imageURL = await imageReference.getDownloadURL();
         setState(() {
@@ -66,6 +68,7 @@ class _AddLocationPageState extends State<AddLocationPage> {
     final String apiUrl = 'https://maps.googleapis.com/maps/api/place/textsearch/json?query=$locationQuery&key=$apiKey';
     final response = await http.get(Uri.parse(apiUrl));
     if (response.statusCode == 200) {
+      // convertir la réponse en json en objet dart
       final data = json.decode(response.body);
       if (data['results'].isEmpty) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -101,6 +104,19 @@ class _AddLocationPageState extends State<AddLocationPage> {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Ajouter une location'),
+        backgroundColor: Colors.transparent,
+        flexibleSpace: Container(
+          decoration: const BoxDecoration(
+            gradient: LinearGradient(
+              begin: Alignment.topCenter,
+              end: Alignment.bottomCenter,
+              colors: [
+                Color(0xC3A2CDFA),
+                Color(0xC30B6A85),
+              ],
+            ),
+          ),
+        ),
       ),
       body: SingleChildScrollView(
         child: Padding(
@@ -112,7 +128,10 @@ class _AddLocationPageState extends State<AddLocationPage> {
                 children: [
                   const Text(
                     'Nom du lieu : ',
-                    style: TextStyle(fontWeight: FontWeight.bold),
+                    style: TextStyle(
+                      fontWeight: FontWeight.bold,
+                      fontSize: 18.0,
+                    ),
                   ),
                   Flexible(
                     child: TextField(
@@ -135,7 +154,10 @@ class _AddLocationPageState extends State<AddLocationPage> {
                 children: [
                   const Text(
                     'Date de visite :',
-                    style: TextStyle(fontWeight: FontWeight.bold),
+                    style: TextStyle(
+                      fontWeight: FontWeight.bold,
+                      fontSize: 18.0,
+                    ),
                   ),
                   Container(
                     margin: const EdgeInsets.only(left: 2.0),
@@ -150,17 +172,33 @@ class _AddLocationPageState extends State<AddLocationPage> {
               const SizedBox(height: 16.0),
               const Text(
                 'Notes : ',
-                style: TextStyle(fontWeight: FontWeight.bold),
+                style: TextStyle(
+                  fontWeight: FontWeight.bold,
+                  fontSize: 18.0,
+                ),
               ),
               TextField(controller: note),
               const SizedBox(height: 16.0),
               const Text(
                 'Carte : ',
-                style: TextStyle(fontWeight: FontWeight.bold),
+                style: TextStyle(
+                  fontWeight: FontWeight.bold,
+                  fontSize: 18.0,
+                ),
               ),
               const SizedBox(height: 16.0),
-              SizedBox(
-                height: 200,
+              Container(
+                margin: const EdgeInsets.symmetric(vertical: 8.0),
+                height: 250,
+                decoration: const BoxDecoration(
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.grey,
+                      blurRadius: 5.0,
+                      offset: Offset(2, 6),
+                    ),
+                  ],
+                ),
                 child: GoogleMap(
                   onMapCreated: (GoogleMapController controller) {
                     mapController = controller;
@@ -171,7 +209,7 @@ class _AddLocationPageState extends State<AddLocationPage> {
                   ),
                   markers: {
                     Marker(
-                      markerId: MarkerId(name.text),
+                      markerId: const MarkerId("default"),
                       position: LatLng(latitude, longitude),
                     ),
                   },
@@ -180,13 +218,24 @@ class _AddLocationPageState extends State<AddLocationPage> {
               const SizedBox(height: 16.0),
               const Text(
                 'Photos :',
-                style: TextStyle(fontWeight: FontWeight.bold),
+                style: TextStyle(
+                  fontWeight: FontWeight.bold,
+                  fontSize: 18.0,
+                ),
               ),
               Container(
                 margin: const EdgeInsets.only(top: 16.0),
                 child: ElevatedButton(
                   onPressed: _pickImageFromPhoneGallery,
-                  child: const Text('Ajouter une photo'),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: const Color(0xC3A2CDFA),
+                  ),
+                  child: const Text(
+                    'Ajouter une photo',
+                    style: TextStyle(
+                      color: Colors.black,
+                    ),
+                  ),
                 ),
               ),
             ],
@@ -202,6 +251,7 @@ class _AddLocationPageState extends State<AddLocationPage> {
         },
         label: const Text('Ajouter ce lieu'),
         icon: const Icon(Icons.add),
+        backgroundColor: const Color(0xC3A2CDFA),
       ),
     );
   }
