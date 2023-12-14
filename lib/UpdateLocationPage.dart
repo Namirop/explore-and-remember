@@ -127,9 +127,6 @@ class _UpdateLocationPageState extends State<UpdateLocationPage> {
         final imageURL = await imageReference.getDownloadURL();
         setState(() {
           imageURLList.add(imageURL);
-          for (var imageURL in imageURLList) {
-            print("Image URL : $imageURL");
-          }
         });
       }
     }

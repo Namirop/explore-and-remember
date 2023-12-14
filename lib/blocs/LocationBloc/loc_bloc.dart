@@ -12,7 +12,6 @@ class LocationBloc extends Bloc<LocationEvent, LocationState> {
       try {
         await for (var locations in _firestoreService.getLocations()) {
           emit(LocationsLoaded(locations));
-          print("LOCATIONS EMISES");
         }
       } catch (e) {
         emit(LocationError("Récupération des lieux impossible : $e"));

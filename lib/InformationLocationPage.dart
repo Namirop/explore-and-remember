@@ -145,8 +145,7 @@ class _InformationLocationPageState extends State<InformationLocationPage> {
                                       onPressed: () {
                                         final imageURL = imageURLList[currentIndex];
                                         final idLocation = location.getID;
-                                        BlocProvider.of<LocationBloc>(context)
-                                            .add(DeleteImageFromFirebaseStorageAndDB(imageURL, imageURLList, idLocation));
+                                        BlocProvider.of<LocationBloc>(context).add(DeleteImageFromFirebaseStorageAndDB(imageURL, imageURLList, idLocation));
                                         Navigator.pop(context);
                                       },
                                     ),
@@ -182,7 +181,6 @@ class _InformationLocationPageState extends State<InformationLocationPage> {
                     margin: const EdgeInsets.all(12.0),
                     decoration: BoxDecoration(
                       border: Border.all(color: Colors.grey.shade300),
-                      // réduire solidité de la bordure
                       borderRadius: BorderRadius.circular(10.0),
                       boxShadow: [
                         BoxShadow(
@@ -256,7 +254,6 @@ class _InformationLocationPageState extends State<InformationLocationPage> {
                     margin: const EdgeInsets.all(12.0),
                     decoration: BoxDecoration(
                       border: Border.all(color: Colors.grey.shade300),
-                      // réduire solidité de la bordure
                       borderRadius: BorderRadius.circular(10.0),
                       boxShadow: [
                         BoxShadow(
@@ -311,6 +308,7 @@ class _InformationLocationPageState extends State<InformationLocationPage> {
                       ],
                     ),
                     child: GoogleMap(
+                      key: ValueKey(location),
                       onMapCreated: (GoogleMapController controller) {
                         mapController = controller;
                       },

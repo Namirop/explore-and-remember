@@ -138,6 +138,7 @@ class FirestoreService {
     }
   }
 
+
   getLocationInformation(String locationId) {
     try {
       return locationsCollection.doc(locationId).get().then((doc) {
