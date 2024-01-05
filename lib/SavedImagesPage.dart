@@ -31,7 +31,6 @@ class _SavedImagesPageState extends State<SavedImagesPage> {
     });
   }
 
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(

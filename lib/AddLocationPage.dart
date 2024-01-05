@@ -54,7 +54,7 @@ class _AddLocationPageState extends State<AddLocationPage> {
         Reference imageReference = FirebaseStorage.instance.ref().child('images/$uniqueFileName.$ext');
         // on crée un fichier à partir de l'image récupérée
         File imageFile = File(image.path);
-        // on upload l'image dans le storage
+        // on upload l'image à cette référence du storage
         await imageReference.putFile(imageFile, SettableMetadata(contentType: 'image/$ext'));
         final imageURL = await imageReference.getDownloadURL();
         setState(() {
@@ -68,7 +68,7 @@ class _AddLocationPageState extends State<AddLocationPage> {
     final String apiUrl = 'https://maps.googleapis.com/maps/api/place/textsearch/json?query=$locationQuery&key=$apiKey';
     final response = await http.get(Uri.parse(apiUrl));
     if (response.statusCode == 200) {
-      // convertir la réponse en json en objet dart
+      // convertie la réponse json en objet dart
       final data = json.decode(response.body);
       if (data['results'].isEmpty) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -255,5 +255,4 @@ class _AddLocationPageState extends State<AddLocationPage> {
       ),
     );
   }
-
 }
