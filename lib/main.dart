@@ -1,6 +1,7 @@
 import 'dart:ui';
 
 import 'package:explore_and_remember/InformationLocationPage.dart';
+import 'package:explore_and_remember/blocs/SearchPlaceBloc/search_place_bloc.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -32,6 +33,9 @@ class MyApp extends StatelessWidget {
         providers: [
           BlocProvider<LocationBloc>(
             create: (context) => LocationBloc(FirestoreService()),
+          ),
+          BlocProvider<LocationSearchBloc>(
+            create: (context) => LocationSearchBloc(),
           ),
         ],
         child: MaterialApp(

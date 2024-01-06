@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'dart:io';
+import 'package:explore_and_remember/blocs/LocationBloc/loc_states.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -8,6 +9,10 @@ import 'blocs/LocationBloc/loc_bloc.dart';
 import 'blocs/LocationBloc/loc_events.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:http/http.dart' as http;
+
+import 'blocs/SearchPlaceBloc/search_place_bloc.dart';
+import 'blocs/SearchPlaceBloc/search_place_events.dart';
+import 'blocs/SearchPlaceBloc/search_place_states.dart';
 
 class AddLocationPage extends StatefulWidget {
   const AddLocationPage({Key? key}) : super(key: key);
@@ -64,41 +69,6 @@ class _AddLocationPageState extends State<AddLocationPage> {
     }
   }
 
-  Future<void> _searchPlaces(String locationQuery) async {
-    final String apiUrl = 'https://maps.googleapis.com/maps/api/place/textsearch/json?query=$locationQuery&key=$apiKey';
-    final response = await http.get(Uri.parse(apiUrl));
-    if (response.statusCode == 200) {
-      // convertie la réponse json en objet dart
-      final data = json.decode(response.body);
-      if (data['results'].isEmpty) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Soyez plus précis dans votre recherche'),
-          ),
-        );
-      }
-      setState(() {
-        latitude = data['results'][0]['geometry']['location']['lat'];
-        longitude = data['results'][0]['geometry']['location']['lng'];
-      });
-
-      setState(() {
-        mapController.animateCamera(CameraUpdate.newCameraPosition(
-          CameraPosition(
-            target: LatLng(latitude, longitude),
-            zoom: 10,
-          ),
-        ));
-      });
-    } else {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Erreur lors de la recherche, veuillez réessayer'),
-        ),
-      );
-    }
-  }
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -142,9 +112,45 @@ class _AddLocationPageState extends State<AddLocationPage> {
                   IconButton(
                     icon: const Icon(Icons.search),
                     onPressed: () {
-                      final locationQuery = name.text;
-                      _searchPlaces(locationQuery);
+                      BlocProvider.of<LocationSearchBloc>(context).add(SearchLocation(name.text));
                       focusNode.unfocus();
+                    },
+                  ),
+                  BlocBuilder<LocationSearchBloc, LocationSearchState>(
+                    builder: (context, state) {
+                      if (state is LocationSearchLoading) {
+                        return const Center(
+                            child: CircularProgressIndicator()
+                        );
+                      } else if (state is LocationSearchIsEmpty) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(
+                            content: Text('Soyez plus précis dans votre recherche'),
+                          ),
+                        );
+                      } else if (state is LocationSearchLoaded) {
+                        latitude = state.latitude;
+                        longitude = state.longitude;
+                        mapController.animateCamera(CameraUpdate.newCameraPosition(
+                          CameraPosition(
+                            target: LatLng(latitude, longitude),
+                            zoom: 10,
+                          ),
+                        ));
+                      } else if (state is LocationSearchError) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(
+                            content: Text('Erreur lors de la recherche, veuillez réessayer'),
+                          ),
+                        );
+                      } else if (state is LocationSearchError) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(
+                            content: Text('Erreur lors de la recherche, veuillez réessayer'),
+                          ),
+                        );
+                      }
+                      return const Text('');
                     },
                   ),
                 ],
