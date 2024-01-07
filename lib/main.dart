@@ -243,7 +243,13 @@ class _MyHomePageState extends State<MyHomePage> {
               },
             );
           } else if (state is LocationError) {
-            return Text(state.message);
+            WidgetsBinding.instance.addPostFrameCallback((_) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  content: Text(state.message),
+                ),
+              );
+            });
           }
           return const Text("Aucun lieu");
         },

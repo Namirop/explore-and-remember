@@ -1,4 +1,3 @@
-import 'dart:ui';
 import 'package:explore_and_remember/UpdateLocationPage.dart';
 import 'package:explore_and_remember/blocs/ImagesBloc/images_bloc.dart';
 import 'package:flutter/material.dart';
@@ -11,7 +10,6 @@ import 'blocs/LocationBloc/loc_events.dart';
 import 'blocs/LocationBloc/loc_states.dart';
 import 'blocs/ImagesBloc/images_events.dart';
 import 'main.dart';
-import 'package:http/http.dart' as http;
 
 
 class InformationLocationPage extends StatefulWidget {
@@ -70,7 +68,6 @@ class _InformationLocationPageState extends State<InformationLocationPage> {
           ),
         ),
         toolbarHeight: 1,
-        automaticallyImplyLeading: false,
       ),
       body: BlocBuilder<LocationBloc, LocationState>(
         builder: (context, state) {
@@ -324,6 +321,7 @@ class _InformationLocationPageState extends State<InformationLocationPage> {
                           },
                           label: const Text(''),
                           icon: const Icon(Icons.arrow_back),
+                          heroTag: 'backButton',
                           backgroundColor: const Color(0xC3A2CDFA),
                         ),
                         const SizedBox(width: 16.0),
@@ -340,6 +338,7 @@ class _InformationLocationPageState extends State<InformationLocationPage> {
                           },
                           label: const Text('MODIFIER CE LIEU'),
                           icon: const Icon(Icons.edit),
+                          heroTag: 'editButton',
                           backgroundColor: const Color(0xC3A2CDFA),
                         ),
                       ],

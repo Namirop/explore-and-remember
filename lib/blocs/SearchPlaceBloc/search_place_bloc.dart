@@ -25,11 +25,8 @@ class LocationSearchBloc extends Bloc<LocationSearchEvent, LocationSearchState> 
             } else {
               latitude = data['results'][0]['geometry']['location']['lat'];
               longitude = data['results'][0]['geometry']['location']['lng'];
-              print('latitude : $latitude');
               emit(LocationSearchLoaded(latitude, longitude));
             }
-          } else {
-            emit(LocationSearchError('Erreur lors de la récupération du lieu'));
           }
         } catch (e) {
           emit(LocationSearchError('Erreur lors de la récupération des lieux : $e'));

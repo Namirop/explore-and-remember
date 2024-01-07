@@ -13,26 +13,18 @@ class ImagesBloc extends Bloc<PickImagesEvent, PickImagesState> {
       try {
         final List<String> imageURLList = event.imageURLList;
         final ImagePicker picker = ImagePicker();
-        final List<XFile> pickedImagesFromGallery = await picker
-            .pickMultiImage();
+        final List<XFile> pickedImagesFromGallery = await picker.pickMultiImage();
 
         if (pickedImagesFromGallery.isNotEmpty) {
           for (var image in pickedImagesFromGallery) {
-            String uniqueFileName = DateTime
-                .now()
-                .millisecondsSinceEpoch
-                .toString();
-            final ext = image.path
-                .split('.')
-                .last;
+            String uniqueFileName = DateTime.now().millisecondsSinceEpoch.toString();
+            final ext = image.path.split('.').last;
             // on crée la référence de l'image dans le storage, l'endroit où elle sera stockée
-            Reference imageReference = FirebaseStorage.instance.ref().child(
-                'images/$uniqueFileName.$ext');
+            Reference imageReference = FirebaseStorage.instance.ref().child('images/$uniqueFileName.$ext');
             // on crée un fichier à partir de l'image récupérée
             File imageFile = File(image.path);
             // on upload l'image à cette référence du storage
-            await imageReference.putFile(
-                imageFile, SettableMetadata(contentType: 'image/$ext'));
+            await imageReference.putFile(imageFile, SettableMetadata(contentType: 'image/$ext'));
             final imageURL = await imageReference.getDownloadURL();
             imageURLList.add(imageURL);
           }

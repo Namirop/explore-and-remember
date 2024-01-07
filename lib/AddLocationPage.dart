@@ -3,7 +3,6 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'blocs/LocationBloc/loc_bloc.dart';
 import 'blocs/LocationBloc/loc_events.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
-import 'package:http/http.dart' as http;
 import 'blocs/ImagesBloc/images_bloc.dart';
 import 'blocs/ImagesBloc/images_events.dart';
 import 'blocs/ImagesBloc/images_states.dart';
@@ -55,7 +54,6 @@ class _AddLocationPageState extends State<AddLocationPage> {
       setState(() => date = pickedDate);
     }
   }
-
 
   @override
   Widget build(BuildContext context) {
@@ -239,7 +237,7 @@ class _AddLocationPageState extends State<AddLocationPage> {
                     } else if (state is PickImagesLoaded) {
                       isImagesLoading = false;
                       imageURLList = state.imageURLList;
-                    } else if (state is PickImagesError) {
+                    } else if (state is ErrorState) {
                       WidgetsBinding.instance.addPostFrameCallback((_) {
                         ScaffoldMessenger.of(context).showSnackBar(
                            SnackBar(

@@ -24,11 +24,6 @@ class GetSavedImagesURLsLoaded extends PickImagesState {
   GetSavedImagesURLsLoaded(this.savedImageURLList);
 }
 
-class PickImagesError extends PickImagesState {
-  final String message;
-  PickImagesError(this.message);
-}
-
 class SavedImagesListIsEmpty extends PickImagesState {}
 
 class ImagesListIsEmpty extends PickImagesState {}
