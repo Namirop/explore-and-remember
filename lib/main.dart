@@ -1,5 +1,4 @@
 import 'dart:ui';
-
 import 'package:explore_and_remember/InformationLocationPage.dart';
 import 'package:explore_and_remember/blocs/SearchPlaceBloc/search_place_bloc.dart';
 import 'package:firebase_core/firebase_core.dart';
@@ -12,6 +11,7 @@ import 'SavedImagesPage.dart';
 import 'blocs/LocationBloc/loc_bloc.dart';
 import 'blocs/LocationBloc/loc_events.dart';
 import 'blocs/LocationBloc/loc_states.dart';
+import 'blocs/ImagesBloc/images_bloc.dart';
 import 'firebase/firebase_options.dart';
 import 'Location.dart';
 import 'firebase/firestore_service.dart';
@@ -36,6 +36,9 @@ class MyApp extends StatelessWidget {
           ),
           BlocProvider<LocationSearchBloc>(
             create: (context) => LocationSearchBloc(),
+          ),
+          BlocProvider<ImagesBloc>(
+            create: (context) => ImagesBloc(),
           ),
         ],
         child: MaterialApp(
@@ -64,8 +67,8 @@ class _MyHomePageState extends State<MyHomePage> {
 
   @override
   void initState() {
-    BlocProvider.of<LocationBloc>(context).add(GetLocations());
     super.initState();
+    BlocProvider.of<LocationBloc>(context).add(GetLocations());
   }
 
   @override
@@ -240,7 +243,7 @@ class _MyHomePageState extends State<MyHomePage> {
               },
             );
           } else if (state is LocationError) {
-            return const Text("Erreur lors de la récupération des lieux");
+            return Text(state.message);
           }
           return const Text("Aucun lieu");
         },

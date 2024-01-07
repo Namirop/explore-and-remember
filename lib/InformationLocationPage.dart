@@ -1,6 +1,6 @@
 import 'dart:ui';
 import 'package:explore_and_remember/UpdateLocationPage.dart';
-import 'package:firebase_storage/firebase_storage.dart';
+import 'package:explore_and_remember/blocs/ImagesBloc/images_bloc.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
@@ -9,6 +9,7 @@ import 'Location.dart';
 import 'blocs/LocationBloc/loc_bloc.dart';
 import 'blocs/LocationBloc/loc_events.dart';
 import 'blocs/LocationBloc/loc_states.dart';
+import 'blocs/ImagesBloc/images_events.dart';
 import 'main.dart';
 import 'package:http/http.dart' as http;
 
@@ -49,26 +50,6 @@ class _InformationLocationPageState extends State<InformationLocationPage> {
     note = location.getNote;
     date = DateFormat("MMMM dd, yyyy").parse(location.getDate);
     BlocProvider.of<LocationBloc>(context).add(GetLocationInformation(location.id));
-  }
-
-  Future<void> _saveImage(String imageURL) async {
-
-    // On télécharge le fichier de l'image à partir de son URL
-    final response = await http.get(Uri.parse(imageURL));
-    // On récupère les bytes de l'image
-    final bytes = response.bodyBytes;
-
-    // On récupère le nom unique de l'image
-    final uniqueFileName = imageURL.split('/').last;
-
-    // On récupère l'extension
-    final ext = uniqueFileName.split('.').last;
-
-    // On crée une référence à l'emplacement où l'image sera sauvegardée
-    Reference imageSavedReference = FirebaseStorage.instance.ref().child('saved/$uniqueFileName.$ext');
-
-    // On sauvegarde l'image
-    await imageSavedReference.putData(bytes, SettableMetadata(contentType: 'image/$ext'));
   }
 
   @override
@@ -136,7 +117,7 @@ class _InformationLocationPageState extends State<InformationLocationPage> {
                                       icon: const Icon(Icons.save),
                                       onPressed: () {
                                         final imageURL = imageURLList[currentIndex];
-                                        _saveImage(imageURL);
+                                        BlocProvider.of<ImagesBloc>(context).add(SaveImages(imageURL));
                                         Navigator.pop(context);
                                       },
                                     ),

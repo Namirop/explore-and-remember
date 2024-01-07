@@ -1,5 +1,8 @@
-import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'blocs/ImagesBloc/images_bloc.dart';
+import 'blocs/ImagesBloc/images_events.dart';
+import 'blocs/ImagesBloc/images_states.dart';
 
 class SavedImagesPage extends StatefulWidget {
   const SavedImagesPage({Key? key}) : super(key: key);
@@ -15,20 +18,7 @@ class _SavedImagesPageState extends State<SavedImagesPage> {
   @override
   void initState() {
     super.initState();
-    getSavedImagesURLs();
-  }
-
-  getSavedImagesURLs() {
-    Reference imageReference = FirebaseStorage.instance.ref().child('saved');
-    imageReference.listAll().then((savedImageURLList) {
-      for (var image in savedImageURLList.items) {
-        image.getDownloadURL().then((value) {
-          setState(() {
-            savedImagesURLList.add(value);
-          });
-        });
-      }
-    });
+    BlocProvider.of<ImagesBloc>(context).add(GetSavedImagesURLs());
   }
 
   @override
@@ -56,22 +46,45 @@ class _SavedImagesPageState extends State<SavedImagesPage> {
           ),
         ),
       ),
-      body: Center(
-        child: Column(
-          children: [
-            Expanded(
-              child: ListView.builder(
-                itemCount: savedImagesURLList.length,
-                itemBuilder: (context, index) {
-                  return Padding(
-                    padding: const EdgeInsets.all(8.0),
-                    child: Image.network(savedImagesURLList[index]),
-                  );
-                },
+      body: BlocBuilder<ImagesBloc, PickImagesState>(
+        builder: (context, state) {
+          if (state is GetSavedImagesURLsLoaded) {
+            return Center(
+              child: Column(
+                children: [
+                  Expanded(
+                    child: ListView.builder(
+                      itemCount: state.savedImageURLList.length,
+                      itemBuilder: (context, index) {
+                        return Padding(
+                          padding: const EdgeInsets.all(8.0),
+                          child: Image.network(
+                              state.savedImageURLList[index]
+                          ),
+                        );
+                      },
+                    ),
+                  ),
+                ],
               ),
-            ),
-          ],
-        ),
+            );
+          } else if (state is LoadingState) {
+            return const Center(
+              child: CircularProgressIndicator(),
+            );
+          } else if (state is ErrorState) {
+            return Center(
+              child: Text(state.message),
+            );
+          } else if (state is SavedImagesListIsEmpty) {
+            return const Center(
+              child: Text("Aucune image sauvegardée"),
+            );
+          }
+          return const Center(
+            child: CircularProgressIndicator(),
+          );
+        },
       ),
     );
   }

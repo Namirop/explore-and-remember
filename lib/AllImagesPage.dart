@@ -1,5 +1,8 @@
-import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'blocs/ImagesBloc/images_bloc.dart';
+import 'blocs/ImagesBloc/images_events.dart';
+import 'blocs/ImagesBloc/images_states.dart';
 
 class AllImagesPage extends StatefulWidget {
   const AllImagesPage({Key? key}) : super(key: key);
@@ -10,25 +13,12 @@ class AllImagesPage extends StatefulWidget {
 
 class _AllImagesPageState extends State<AllImagesPage> {
 
-  late List<String> allImagesURLList = [];
+  late List<String> allImagesURLList;
 
   @override
   void initState() {
     super.initState();
-    getAllImagesURLs();
-  }
-
-  getAllImagesURLs() {
-      Reference imageReference = FirebaseStorage.instance.ref().child('images');
-      imageReference.listAll().then((imagesURLList) {
-        for (var image in imagesURLList.items) {
-          image.getDownloadURL().then((value) {
-            setState(() {
-              allImagesURLList.add(value);
-            });
-          });
-        }
-      });
+    BlocProvider.of<ImagesBloc>(context).add(GetImagesURLs());
   }
 
   @override
@@ -56,24 +46,43 @@ class _AllImagesPageState extends State<AllImagesPage> {
           ),
         ),
       ),
-      body: Center(
-        child: Column(
-          children: [
-            Expanded(
-              child: ListView.builder(
-                itemCount: allImagesURLList.length,
-                itemBuilder: (context, index) {
-                  return Padding(
-                    padding: const EdgeInsets.all(8.0),
-                    child: Image.network(
-                        allImagesURLList[index]
+      body: BlocBuilder<ImagesBloc, PickImagesState>(
+        builder: (context, state) {
+          if (state is GetImagesURLsLoaded) {
+            return Center(
+              child: Column(
+                children: [
+                  Expanded(
+                    child: ListView.builder(
+                      itemCount: state.imageURLList.length,
+                      itemBuilder: (context, index) {
+                        return Padding(
+                          padding: const EdgeInsets.all(8.0),
+                          child: Image.network(
+                              state.imageURLList[index]
+                          ),
+                        );
+                      },
                     ),
-                  );
-                },
+                  ),
+                ],
               ),
-            ),
-          ],
-        ),
+            );
+          } else if (state is ErrorState) {
+            return Center(
+              child: Text(state.message),
+            );
+          } else if (state is LoadingState) {
+            return const Center(
+              child: CircularProgressIndicator(),
+            );
+          } else if (state is ImagesListIsEmpty) {
+            return const Center(
+              child: Text("Aucune image"),
+            );
+          }
+          return const SizedBox.shrink();
+        },
       ),
     );
   }

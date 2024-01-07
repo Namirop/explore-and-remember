@@ -1,15 +1,12 @@
-import 'dart:convert';
-import 'dart:io';
-import 'package:explore_and_remember/blocs/LocationBloc/loc_states.dart';
-import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:image_picker/image_picker.dart';
 import 'blocs/LocationBloc/loc_bloc.dart';
 import 'blocs/LocationBloc/loc_events.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:http/http.dart' as http;
-
+import 'blocs/ImagesBloc/images_bloc.dart';
+import 'blocs/ImagesBloc/images_events.dart';
+import 'blocs/ImagesBloc/images_states.dart';
 import 'blocs/SearchPlaceBloc/search_place_bloc.dart';
 import 'blocs/SearchPlaceBloc/search_place_events.dart';
 import 'blocs/SearchPlaceBloc/search_place_states.dart';
@@ -25,7 +22,6 @@ class _AddLocationPageState extends State<AddLocationPage> {
 
   final TextEditingController name = TextEditingController();
   final TextEditingController note = TextEditingController();
-  final String apiKey = 'AIzaSyBC_9BXrQhZpwI3dWGhKiLtew1kMk1oevc';
   final FocusNode focusNode = FocusNode();
 
   late DateTime date = DateTime.now();
@@ -33,6 +29,20 @@ class _AddLocationPageState extends State<AddLocationPage> {
   late GoogleMapController mapController;
   late double latitude = 0.0;
   late double longitude = 0.0;
+  bool isImagesLoading = false;
+
+@override
+  void initState() {
+    super.initState();
+    GoogleMap(
+        onMapCreated: (GoogleMapController controller) {
+      mapController = controller;
+      }, initialCameraPosition: CameraPosition(
+          target: LatLng(latitude, longitude),
+          zoom: 1,
+     ),
+    );
+  }
 
   Future _selectDate(BuildContext context) async {
     final DateTime? pickedDate = await showDatePicker(
@@ -46,28 +56,6 @@ class _AddLocationPageState extends State<AddLocationPage> {
     }
   }
 
-  Future _pickImageFromPhoneGallery() async {
-    final ImagePicker picker = ImagePicker();
-
-    final List<XFile> pickedImagesFromGallery = await picker.pickMultiImage();
-
-    if (pickedImagesFromGallery.isNotEmpty) {
-      for (var image in pickedImagesFromGallery) {
-        String uniqueFileName = DateTime.now().millisecondsSinceEpoch.toString();
-        final ext = image.path.split('.').last;
-        // on crée la référence de l'image dans le storage, l'endroit où elle sera stockée
-        Reference imageReference = FirebaseStorage.instance.ref().child('images/$uniqueFileName.$ext');
-        // on crée un fichier à partir de l'image récupérée
-        File imageFile = File(image.path);
-        // on upload l'image à cette référence du storage
-        await imageReference.putFile(imageFile, SettableMetadata(contentType: 'image/$ext'));
-        final imageURL = await imageReference.getDownloadURL();
-        setState(() {
-          imageURLList.add(imageURL);
-        });
-      }
-    }
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -123,11 +111,13 @@ class _AddLocationPageState extends State<AddLocationPage> {
                             child: CircularProgressIndicator()
                         );
                       } else if (state is LocationSearchIsEmpty) {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(
-                            content: Text('Soyez plus précis dans votre recherche'),
-                          ),
-                        );
+                        WidgetsBinding.instance.addPostFrameCallback((_) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(
+                              content: Text('Soyez plus précis dans votre recherche'),
+                            ),
+                          );
+                        });
                       } else if (state is LocationSearchLoaded) {
                         latitude = state.latitude;
                         longitude = state.longitude;
@@ -138,19 +128,15 @@ class _AddLocationPageState extends State<AddLocationPage> {
                           ),
                         ));
                       } else if (state is LocationSearchError) {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(
-                            content: Text('Erreur lors de la recherche, veuillez réessayer'),
-                          ),
-                        );
-                      } else if (state is LocationSearchError) {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(
-                            content: Text('Erreur lors de la recherche, veuillez réessayer'),
-                          ),
-                        );
+                        WidgetsBinding.instance.addPostFrameCallback((_) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                             SnackBar(
+                              content: Text(state.message),
+                            ),
+                          );
+                        });
                       }
-                      return const Text('');
+                      return const SizedBox.shrink();
                     },
                   ),
                 ],
@@ -232,7 +218,9 @@ class _AddLocationPageState extends State<AddLocationPage> {
               Container(
                 margin: const EdgeInsets.only(top: 16.0),
                 child: ElevatedButton(
-                  onPressed: _pickImageFromPhoneGallery,
+                  onPressed: () {
+                    BlocProvider.of<ImagesBloc>(context).add(PickImages(imageURLList));
+                  },
                   style: ElevatedButton.styleFrom(
                     backgroundColor: const Color(0xC3A2CDFA),
                   ),
@@ -244,12 +232,31 @@ class _AddLocationPageState extends State<AddLocationPage> {
                   ),
                 ),
               ),
+                BlocBuilder<ImagesBloc, PickImagesState>(
+                  builder: (context, state) {
+                    if (state is LoadingState) {
+                      isImagesLoading = true;
+                    } else if (state is PickImagesLoaded) {
+                      isImagesLoading = false;
+                      imageURLList = state.imageURLList;
+                    } else if (state is PickImagesError) {
+                      WidgetsBinding.instance.addPostFrameCallback((_) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                           SnackBar(
+                            content: Text(state.message),
+                          ),
+                        );
+                      });
+                    }
+                    return const SizedBox.shrink();
+                  },
+                ),
             ],
           ),
         ),
       ),
       floatingActionButton: FloatingActionButton.extended(
-        onPressed: () {
+        onPressed: isImagesLoading ? null : () {
           BlocProvider.of<LocationBloc>(context).add(
             AddLocation(name.text, date, note.text, imageURLList, latitude, longitude),
           );
@@ -257,7 +264,7 @@ class _AddLocationPageState extends State<AddLocationPage> {
         },
         label: const Text('Ajouter ce lieu'),
         icon: const Icon(Icons.add),
-        backgroundColor: const Color(0xC3A2CDFA),
+        backgroundColor: isImagesLoading ? Colors.grey : const Color(0xC3A2CDFA),
       ),
     );
   }

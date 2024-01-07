@@ -1,19 +1,16 @@
-import 'dart:convert';
-import 'dart:io';
-
 import 'package:explore_and_remember/InformationLocationPage.dart';
 import 'package:explore_and_remember/blocs/LocationBloc/loc_events.dart';
 import 'package:explore_and_remember/main.dart';
-import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
-import 'package:image_picker/image_picker.dart';
 import 'package:intl/intl.dart';
 import 'Location.dart';
 import 'blocs/LocationBloc/loc_bloc.dart';
 import 'package:http/http.dart' as http;
-
+import 'blocs/ImagesBloc/images_bloc.dart';
+import 'blocs/ImagesBloc/images_events.dart';
+import 'blocs/ImagesBloc/images_states.dart';
 import 'blocs/SearchPlaceBloc/search_place_bloc.dart';
 import 'blocs/SearchPlaceBloc/search_place_events.dart';
 import 'blocs/SearchPlaceBloc/search_place_states.dart';
@@ -42,6 +39,8 @@ class _UpdateLocationPageState extends State<UpdateLocationPage> {
   late double latitude;
   late GoogleMapController mapController;
   final String apiKey = 'AIzaSyBC_9BXrQhZpwI3dWGhKiLtew1kMk1oevc';
+  bool isImagesLoading = false;
+
 
   @override
   void initState() {
@@ -54,7 +53,6 @@ class _UpdateLocationPageState extends State<UpdateLocationPage> {
     date = DateFormat("MMMM dd, yyyy").parse(location.getDate);
     longitude = location.getLongitude;
     latitude = location.getLatitude;
-
   }
 
   Future _selectDate(BuildContext context) async {
@@ -79,26 +77,6 @@ class _UpdateLocationPageState extends State<UpdateLocationPage> {
     // si pickedDate n'est pas null, on met à jour la date
     if (pickedDate != null) {
       setState(() => date = pickedDate);
-    }
-  }
-
-  Future _pickImageFromPhoneGallery() async {
-    final ImagePicker picker = ImagePicker();
-
-    final List<XFile> pickedImagesFromGallery = await picker.pickMultiImage();
-
-    if (pickedImagesFromGallery.isNotEmpty) {
-      for (var image in pickedImagesFromGallery) {
-        String uniqueFileName = DateTime.now().millisecondsSinceEpoch.toString();
-        final ext = image.path.split('.').last;
-        Reference imageReference = FirebaseStorage.instance.ref().child('images/$uniqueFileName.$ext');
-        File imageFile = File(image.path);
-        await imageReference.putFile(imageFile, SettableMetadata(contentType: 'image/$ext'));
-        final imageURL = await imageReference.getDownloadURL();
-        setState(() {
-          imageURLList.add(imageURL);
-        });
-      }
     }
   }
 
@@ -183,11 +161,13 @@ class _UpdateLocationPageState extends State<UpdateLocationPage> {
                             child: CircularProgressIndicator()
                         );
                       } else if (state is LocationSearchIsEmpty) {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(
-                            content: Text('Soyez plus précis dans votre recherche bofiap'),
-                          ),
-                        );
+                        WidgetsBinding.instance.addPostFrameCallback((_) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(
+                              content: Text('Soyez plus précis dans votre recherche'),
+                            ),
+                          );
+                        });
                       } else if (state is LocationSearchLoaded) {
                         latitude = state.latitude;
                         longitude = state.longitude;
@@ -198,19 +178,16 @@ class _UpdateLocationPageState extends State<UpdateLocationPage> {
                           ),
                         ));
                       } else if (state is LocationSearchError) {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(
-                            content: Text('Erreur lors de la recherche, veuillez réessayer'),
-                          ),
-                        );
-                      } else if (state is LocationSearchError) {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(
-                            content: Text('Erreur lors de la recherche, veuillez réessayer'),
-                          ),
-                        );
+                        WidgetsBinding.instance.addPostFrameCallback((_) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(
+                              content: Text(state.message),
+                            ),
+                          );
+                        });
                       }
-                      return const Text('');
+                      // On retourne un SizedBox.shrink() pour ne rien afficher
+                      return const SizedBox.shrink();
                     },
                   ),
                 ],
@@ -297,7 +274,9 @@ class _UpdateLocationPageState extends State<UpdateLocationPage> {
               Container(
                 margin: const EdgeInsets.only(top: 16.0),
                 child: ElevatedButton(
-                  onPressed: () => _pickImageFromPhoneGallery(),
+                  onPressed: (){
+                    BlocProvider.of<ImagesBloc>(context).add(PickImages(imageURLList));
+                  },
                   style: ElevatedButton.styleFrom(
                     backgroundColor: const Color(0xC3A2CDFA),
                   ),
@@ -308,6 +287,25 @@ class _UpdateLocationPageState extends State<UpdateLocationPage> {
                     ),
                   ),
                 ),
+              ),
+              BlocBuilder<ImagesBloc, PickImagesState>(
+                builder: (context, state) {
+                  if (state is LoadingState) {
+                    isImagesLoading = true;
+                  } else if (state is PickImagesLoaded) {
+                    isImagesLoading = false;
+                    imageURLList = state.imageURLList;
+                  } else if (state is PickImagesError) {
+                    WidgetsBinding.instance.addPostFrameCallback((_) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                          content: Text(state.message),
+                        ),
+                      );
+                    });
+                  }
+                  return const SizedBox.shrink();
+                },
               ),
             ],
           ),

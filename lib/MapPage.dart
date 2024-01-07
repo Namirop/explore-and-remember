@@ -69,11 +69,12 @@ class _MapPageState extends State<MapPage> {
                 ),
               )).toSet(),
             );
-          } else {
-            return const Center(
-                child: Text("Erreur lors du chargement des lieux")
+          } else if (state is LocationError) {
+            return Center(
+              child: Text(state.message),
             );
           }
+          return const SizedBox.shrink();
         },
       ),
     );
