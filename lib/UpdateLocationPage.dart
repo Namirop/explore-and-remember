@@ -52,6 +52,14 @@ class _UpdateLocationPageState extends State<UpdateLocationPage> {
     date = DateFormat("MMMM dd, yyyy").parse(location.getDate);
     longitude = location.getLongitude;
     latitude = location.getLatitude;
+    GoogleMap(
+      onMapCreated: (GoogleMapController controller) {
+        mapController = controller;
+      }, initialCameraPosition: CameraPosition(
+      target: LatLng(latitude, longitude),
+      zoom: 1,
+    ),
+    );
   }
 
   Future _selectDate(BuildContext context) async {
