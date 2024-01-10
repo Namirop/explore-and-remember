@@ -1,3 +1,5 @@
+import 'dart:math';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'blocs/LocationBloc/loc_bloc.dart';
@@ -24,8 +26,8 @@ class _AddLocationPageState extends State<AddLocationPage> {
   final FocusNode focusNode = FocusNode();
 
   late DateTime date = DateTime.now();
-  late List<String> imageURLList = [];
-  late GoogleMapController mapController;
+  late GoogleMapController? mapController;
+  List<String> imageURLList = [];
   late double latitude = 0.0;
   late double longitude = 0.0;
   bool isImagesLoading = false;
@@ -33,14 +35,6 @@ class _AddLocationPageState extends State<AddLocationPage> {
 @override
   void initState() {
     super.initState();
-    GoogleMap(
-        onMapCreated: (GoogleMapController controller) {
-      mapController = controller;
-      }, initialCameraPosition: CameraPosition(
-          target: LatLng(latitude, longitude),
-          zoom: 1,
-     ),
-    );
   }
 
   Future _selectDate(BuildContext context) async {
@@ -89,7 +83,7 @@ class _AddLocationPageState extends State<AddLocationPage> {
                       fontSize: 18.0,
                     ),
                   ),
-                  Flexible(
+                  Expanded(
                     child: TextField(
                       controller: name,
                       focusNode: focusNode,
@@ -119,7 +113,7 @@ class _AddLocationPageState extends State<AddLocationPage> {
                       } else if (state is LocationSearchLoaded) {
                         latitude = state.latitude;
                         longitude = state.longitude;
-                        mapController.animateCamera(CameraUpdate.newCameraPosition(
+                        mapController?.animateCamera(CameraUpdate.newCameraPosition(
                           CameraPosition(
                             target: LatLng(latitude, longitude),
                             zoom: 10,
@@ -191,7 +185,9 @@ class _AddLocationPageState extends State<AddLocationPage> {
                 ),
                 child: GoogleMap(
                   onMapCreated: (GoogleMapController controller) {
-                    mapController = controller;
+                    setState(() {
+                      mapController = controller;
+                    });
                   },
                   initialCameraPosition: CameraPosition(
                     target: LatLng(latitude, longitude),
@@ -217,7 +213,7 @@ class _AddLocationPageState extends State<AddLocationPage> {
                 margin: const EdgeInsets.only(top: 16.0),
                 child: ElevatedButton(
                   onPressed: () {
-                    BlocProvider.of<ImagesBloc>(context).add(PickImages(imageURLList));
+                    BlocProvider.of<ImagesBloc>(context).add(PickImages());
                   },
                   style: ElevatedButton.styleFrom(
                     backgroundColor: const Color(0xC3A2CDFA),

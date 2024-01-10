@@ -1,8 +1,12 @@
 abstract class PickImagesEvent {}
 
 class PickImages extends PickImagesEvent {
+  PickImages();
+}
+
+class UpdateImages extends PickImagesEvent {
   final List<String> imageURLList;
-  PickImages(this.imageURLList);
+  UpdateImages(this.imageURLList);
 }
 
 class SaveImages extends PickImagesEvent {

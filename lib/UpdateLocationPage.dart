@@ -36,7 +36,7 @@ class _UpdateLocationPageState extends State<UpdateLocationPage> {
   late List<String> imageURLList = [];
   late double longitude;
   late double latitude;
-  late GoogleMapController mapController;
+  late GoogleMapController? mapController;
   final String apiKey = 'AIzaSyBC_9BXrQhZpwI3dWGhKiLtew1kMk1oevc';
   bool isImagesLoading = false;
 
@@ -52,14 +52,6 @@ class _UpdateLocationPageState extends State<UpdateLocationPage> {
     date = DateFormat("MMMM dd, yyyy").parse(location.getDate);
     longitude = location.getLongitude;
     latitude = location.getLatitude;
-    GoogleMap(
-      onMapCreated: (GoogleMapController controller) {
-        mapController = controller;
-      }, initialCameraPosition: CameraPosition(
-      target: LatLng(latitude, longitude),
-      zoom: 1,
-    ),
-    );
   }
 
   Future _selectDate(BuildContext context) async {
@@ -147,7 +139,7 @@ class _UpdateLocationPageState extends State<UpdateLocationPage> {
                       fontSize: 18.0,
                     ),
                   ),
-                  Flexible(
+                  Expanded(
                     child: TextField(
                       controller: name,
                       decoration: InputDecoration(
@@ -178,7 +170,7 @@ class _UpdateLocationPageState extends State<UpdateLocationPage> {
                       } else if (state is LocationSearchLoaded) {
                         latitude = state.latitude;
                         longitude = state.longitude;
-                        mapController.animateCamera(CameraUpdate.newCameraPosition(
+                        mapController?.animateCamera(CameraUpdate.newCameraPosition(
                           CameraPosition(
                             target: LatLng(latitude, longitude),
                             zoom: 10,
@@ -256,8 +248,11 @@ class _UpdateLocationPageState extends State<UpdateLocationPage> {
                 ),
                 child: GoogleMap(
                   onMapCreated: (GoogleMapController controller) {
-                    mapController = controller;
+                    setState(() {
+                      mapController = controller;
+                    });
                   },
+
                   initialCameraPosition: CameraPosition(
                     target: LatLng(latitude, longitude),
                     zoom: 12,
@@ -282,7 +277,7 @@ class _UpdateLocationPageState extends State<UpdateLocationPage> {
                 margin: const EdgeInsets.only(top: 16.0),
                 child: ElevatedButton(
                   onPressed: (){
-                    BlocProvider.of<ImagesBloc>(context).add(PickImages(imageURLList));
+                    BlocProvider.of<ImagesBloc>(context).add(UpdateImages(imageURLList));
                   },
                   style: ElevatedButton.styleFrom(
                     backgroundColor: const Color(0xC3A2CDFA),

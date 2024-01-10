@@ -86,13 +86,11 @@ class FirestoreService {
         for (var image in savedImagesList.items) {
           if (image.name.contains(uniqueFileName)) {
             await image.delete();
-            print("Image ${image.name} supprimée du dossier saved");
           }
         }
 
         Reference imageReference = FirebaseStorage.instance.ref().child(filePath);
         await imageReference.delete();
-        print("Image $uniqueFileName supprimée du dossier images");
 
       } catch (e) {
         throw Exception(e.toString());
@@ -116,14 +114,12 @@ class FirestoreService {
       for (var image in savedImagesList.items) {
         if (image.name.contains(uniqueFileName)) {
           await image.delete();
-          print("Image ${image.name} supprimée du dossier saved");
         }
       }
 
       // On supprime l'image du dossier 'images'
       Reference imageReference = FirebaseStorage.instance.ref().child(filePath);
       await imageReference.delete();
-      print("Image $uniqueFileName supprimée du dossier images");
 
       // On supprime l'image de la liste des images de la base de données
       imageURLList.remove(imageURL);
