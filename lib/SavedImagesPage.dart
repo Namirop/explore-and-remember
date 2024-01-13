@@ -72,6 +72,7 @@ class _SavedImagesPageState extends State<SavedImagesPage> {
               ),
             );
           } else if (state is SavedImagesListIsEmpty) {
+
             return const Center(
               child: Text("Aucune image sauvegardée"),
             );

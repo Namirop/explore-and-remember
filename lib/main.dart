@@ -192,6 +192,7 @@ class _MyHomePageState extends State<MyHomePage> {
                 return Card(
                   margin: const EdgeInsets.all(8.0),
                   child: Row(
+
                     children: [
                       Expanded(
                         child: ListTile(

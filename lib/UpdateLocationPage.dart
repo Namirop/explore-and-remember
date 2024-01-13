@@ -108,6 +108,7 @@ class _UpdateLocationPageState extends State<UpdateLocationPage> {
               size: 35,
             ),
             onPressed: () {
+
               BlocProvider.of<LocationBloc>(context).add(DeleteLocation(location, imageURLList));
               Navigator.push(
                 context,

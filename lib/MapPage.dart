@@ -70,6 +70,7 @@ class _MapPageState extends State<MapPage> {
                 ),
               )).toSet(),
             );
+
           } else if (state is LocationError) {
             WidgetsBinding.instance.addPostFrameCallback((_) {
               ScaffoldMessenger.of(context).showSnackBar(

@@ -77,6 +77,7 @@ class _AllImagesPageState extends State<AllImagesPage> {
             );
           } else if (state is ErrorState) {
             WidgetsBinding.instance.addPostFrameCallback((_) {
+
               ScaffoldMessenger.of(context).showSnackBar(
                 SnackBar(
                   content: Text(state.message),

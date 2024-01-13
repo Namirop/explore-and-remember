@@ -227,6 +227,7 @@ class _InformationLocationPageState extends State<InformationLocationPage> {
                   ),
 
                   Container(
+
                     width: double.infinity,
                     padding: const EdgeInsets.all(8.0),
                     margin: const EdgeInsets.all(12.0),
