@@ -60,9 +60,29 @@ class FirestoreService {
     }
   }
 
-  Future<void> deleteLocation(Location location) async {
+  getLocationInformation(String locationId) {
+    try {
+      return locationsCollection.doc(locationId).get().then((doc) {
+        final data = doc.data()!;
+        return Location(
+          id: doc.id,
+          name: data['Name'],
+          date: data['Date'],
+          note: data['Note'],
+          imageURLList: List<String>.from(data['ImageURLs']), // convertie la liste dynamique en liste de String
+          latitude: data['Latitude'],
+          longitude: data['Longitude'],
+        );
+      });
+    } catch (e) {
+      throw Exception(e.toString());
+    }
+  }
+
+  Future<void> deleteLocation(Location location, List<String> imageURLList) async {
     try {
       await locationsCollection.doc(location.getID).delete();
+      deleteImagesFromFirebaseStorage(imageURLList);
     } catch (e) {
       throw Exception(e.toString());
     }
@@ -79,19 +99,26 @@ class FirestoreService {
         List<String> firstSegment = filePath.split('/');
         String uniqueFileNameAndExtension = firstSegment.last;
         List<String> secondSegment = uniqueFileNameAndExtension.split('.');
+        // On récupère le nom unique que l'on a attribué à l'image
         String uniqueFileName = secondSegment.first;
 
-        Reference savedImageReference = FirebaseStorage.instance.ref().child('saved');
-        ListResult savedImagesList = await savedImageReference.listAll();
-        for (var image in savedImagesList.items) {
+        // On supprime l'image du dossier 'images'
+        Reference imagesReference = FirebaseStorage.instance.ref().child('images');
+        ListResult imagesList = await imagesReference.listAll();
+        for (var image in imagesList.items) {
           if (image.name.contains(uniqueFileName)) {
             await image.delete();
           }
         }
 
-        Reference imageReference = FirebaseStorage.instance.ref().child(filePath);
-        await imageReference.delete();
-
+        // On supprime l'image du dossier 'saved' si elle y est
+        Reference savedImagesReference = FirebaseStorage.instance.ref().child('saved');
+        ListResult savedImagesList = await savedImagesReference.listAll();
+        for (var image in savedImagesList.items) {
+          if (image.name.contains(uniqueFileName)) {
+            await image.delete();
+          }
+        }
       } catch (e) {
         throw Exception(e.toString());
       }
@@ -100,28 +127,9 @@ class FirestoreService {
 
   Future<void> deleteImageFromFirebaseStorageAndDB(String imageURL, List<String> imageURLList, String idLocation) async {
     try {
-      Uri uri = Uri.parse(imageURL);
-      String filePath = uri.pathSegments.last;
-      List<String> firstSegment = filePath.split('/');
-      String uniqueFileNameAndExtension = firstSegment.last;
-      List<String> secondSegment = uniqueFileNameAndExtension.split('.');
-      // On récupère le nom unique que l'on a attribué à l'image
-      String uniqueFileName = secondSegment.first;
+      deleteImagesFromFirebaseStorage([imageURL]);
 
-      // On supprime l'image du dossier 'saved' si elle y est
-      Reference savedImageReference = FirebaseStorage.instance.ref().child('saved');
-      ListResult savedImagesList = await savedImageReference.listAll();
-      for (var image in savedImagesList.items) {
-        if (image.name.contains(uniqueFileName)) {
-          await image.delete();
-        }
-      }
-
-      // On supprime l'image du dossier 'images'
-      Reference imageReference = FirebaseStorage.instance.ref().child(filePath);
-      await imageReference.delete();
-
-      // On supprime l'image de la liste des images de la base de données
+      // On supprime l'image de la liste des images de la DB
       imageURLList.remove(imageURL);
 
       // On met à jour la base de données
@@ -129,26 +137,6 @@ class FirestoreService {
         'ImageURLs': imageURLList,
       });
 
-    } catch (e) {
-      throw Exception(e.toString());
-    }
-  }
-
-
-  getLocationInformation(String locationId) {
-    try {
-      return locationsCollection.doc(locationId).get().then((doc) {
-        final data = doc.data();
-        return Location(
-          id: doc.id,
-          name: data!['Name'],
-          date: data['Date'],
-          note: data['Note'],
-          imageURLList: List<String>.from(data['ImageURLs']), // convertie la liste dynamique en liste de String
-          latitude: data['Latitude'],
-          longitude: data['Longitude'],
-        );
-      });
     } catch (e) {
       throw Exception(e.toString());
     }

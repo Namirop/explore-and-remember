@@ -27,14 +27,16 @@ class _AddLocationPageState extends State<AddLocationPage> {
 
   late DateTime date = DateTime.now();
   late GoogleMapController? mapController;
-  List<String> imageURLList = [];
-  late double latitude = 0.0;
-  late double longitude = 0.0;
+  late List<String> imageURLList;
+  late double latitude;
+  late double longitude;
   bool isImagesLoading = false;
 
-@override
+  @override
   void initState() {
     super.initState();
+    latitude = 0.0;
+    longitude = 0.0;
   }
 
   Future _selectDate(BuildContext context) async {
@@ -122,7 +124,7 @@ class _AddLocationPageState extends State<AddLocationPage> {
                       } else if (state is LocationSearchError) {
                         WidgetsBinding.instance.addPostFrameCallback((_) {
                           ScaffoldMessenger.of(context).showSnackBar(
-                             SnackBar(
+                            SnackBar(
                               content: Text(state.message),
                             ),
                           );
@@ -185,9 +187,7 @@ class _AddLocationPageState extends State<AddLocationPage> {
                 ),
                 child: GoogleMap(
                   onMapCreated: (GoogleMapController controller) {
-                    setState(() {
                       mapController = controller;
-                    });
                   },
                   initialCameraPosition: CameraPosition(
                     target: LatLng(latitude, longitude),
@@ -226,31 +226,28 @@ class _AddLocationPageState extends State<AddLocationPage> {
                   ),
                 ),
               ),
-                BlocBuilder<ImagesBloc, PickImagesState>(
-                  builder: (context, state) {
-                    if (state is LoadingState) {
-                      isImagesLoading = true;
-                    } else if (state is PickImagesLoaded) {
-                      isImagesLoading = false;
-                      imageURLList = state.imageURLList;
-                    } else if (state is ErrorState) {
-                      WidgetsBinding.instance.addPostFrameCallback((_) {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                           SnackBar(
-                            content: Text(state.message),
-                          ),
-                        );
-                      });
-                    }
-                    return const SizedBox.shrink();
-                  },
-                ),
+              BlocBuilder<ImagesBloc, PickImagesState>(
+                builder: (context, state) {
+                  if (state is PickImagesLoaded) {
+                    imageURLList = state.imageURLList;
+                  } else if (state is ErrorState) {
+                    WidgetsBinding.instance.addPostFrameCallback((_) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                          content: Text(state.message),
+                        ),
+                      );
+                    });
+                  }
+                  return const SizedBox.shrink();
+                },
+              ),
             ],
           ),
         ),
       ),
       floatingActionButton: FloatingActionButton.extended(
-        onPressed: isImagesLoading ? null : () {
+        onPressed: () {
           BlocProvider.of<LocationBloc>(context).add(
             AddLocation(name.text, date, note.text, imageURLList, latitude, longitude),
           );
@@ -258,7 +255,7 @@ class _AddLocationPageState extends State<AddLocationPage> {
         },
         label: const Text('Ajouter ce lieu'),
         icon: const Icon(Icons.add),
-        backgroundColor: isImagesLoading ? Colors.grey : const Color(0xC3A2CDFA),
+        backgroundColor: const Color(0xC3A2CDFA),
       ),
     );
   }

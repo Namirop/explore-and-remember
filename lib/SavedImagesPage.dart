@@ -13,8 +13,6 @@ class SavedImagesPage extends StatefulWidget {
 
 class _SavedImagesPageState extends State<SavedImagesPage> {
 
-  late List<String> savedImagesURLList = [];
-
   @override
   void initState() {
     super.initState();
@@ -48,18 +46,23 @@ class _SavedImagesPageState extends State<SavedImagesPage> {
       ),
       body: BlocBuilder<ImagesBloc, PickImagesState>(
         builder: (context, state) {
-          if (state is GetSavedImagesURLsLoaded) {
+          if (state is LoadingState) {
+            return const Center(
+              child: CircularProgressIndicator(),
+            );
+          } else if (state is GetSavedImagesURLsLoaded) {
+            final List<String> allSavedImagesURLList = state.savedImageURLList;
             return Center(
               child: Column(
                 children: [
                   Expanded(
                     child: ListView.builder(
-                      itemCount: state.savedImageURLList.length,
+                      itemCount: allSavedImagesURLList.length,
                       itemBuilder: (context, index) {
                         return Padding(
                           padding: const EdgeInsets.all(8.0),
                           child: Image.network(
-                              state.savedImageURLList[index]
+                              allSavedImagesURLList[index]
                           ),
                         );
                       },
@@ -68,18 +71,18 @@ class _SavedImagesPageState extends State<SavedImagesPage> {
                 ],
               ),
             );
-          } else if (state is LoadingState) {
-            return const Center(
-              child: CircularProgressIndicator(),
-            );
-          } else if (state is ErrorState) {
-            return Center(
-              child: Text(state.message),
-            );
           } else if (state is SavedImagesListIsEmpty) {
             return const Center(
               child: Text("Aucune image sauvegardée"),
             );
+          } else if (state is ErrorState) {
+            WidgetsBinding.instance.addPostFrameCallback((_) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  content: Text(state.message),
+                ),
+              );
+            });
           }
           return const Center(
             child: CircularProgressIndicator(),

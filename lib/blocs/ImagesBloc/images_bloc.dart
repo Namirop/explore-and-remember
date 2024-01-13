@@ -11,7 +11,6 @@ class ImagesBloc extends Bloc<PickImagesEvent, PickImagesState> {
     on<PickImages>((event, emit) async {
       emit(LoadingState());
       try {
-        print("PickImages event");
         final List<String> imageURLList = [];
         final ImagePicker picker = ImagePicker();
         final List<XFile> pickedImagesFromGallery = await picker.pickMultiImage();

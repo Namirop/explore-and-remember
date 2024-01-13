@@ -30,12 +30,8 @@ class UpdateLocation extends LocationEvent {
 
 class DeleteLocation extends LocationEvent {
   final Location location;
-  DeleteLocation(this.location);
-}
-
-class DeleteImagesFromFirebaseStorage extends LocationEvent {
   final List<String> imageURLList;
-  DeleteImagesFromFirebaseStorage(this.imageURLList);
+  DeleteLocation(this.location, this.imageURLList);
 }
 
 class DeleteImageFromFirebaseStorageAndDB extends LocationEvent {

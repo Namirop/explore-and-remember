@@ -39,18 +39,9 @@ class LocationBloc extends Bloc<LocationEvent, LocationState> {
     on<DeleteLocation>((event, emit) async {
       emit(LocationLoading());
       try {
-        await _firestoreService.deleteLocation(event.location);
+        await _firestoreService.deleteLocation(event.location, event.imageURLList);
       } catch (e) {
         emit(LocationError("Suppression du lieu impossible : $e"));
-      }
-    });
-
-    on<DeleteImagesFromFirebaseStorage>((event, emit) async {
-      emit(LocationLoading());
-      try {
-        await _firestoreService.deleteImagesFromFirebaseStorage(event.imageURLList);
-      } catch (e) {
-        emit(LocationError("Suppression des images impossible : $e"));
       }
     });
 

@@ -116,7 +116,7 @@ class _MyHomePageState extends State<MyHomePage> {
                   ),
                 ),
                 child: Text(
-                  'EXPLORER AND REMEMBER',
+                  'EXPLORE AND REMEMBER',
                   style: TextStyle(
                     color: Colors.black,
                     fontSize: 20,

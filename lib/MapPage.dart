@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
-
+import 'Location.dart';
 import 'blocs/LocationBloc/loc_bloc.dart';
 import 'blocs/LocationBloc/loc_events.dart';
 import 'blocs/LocationBloc/loc_states.dart';
@@ -55,12 +55,13 @@ class _MapPageState extends State<MapPage> {
                 child: CircularProgressIndicator()
             );
           } else if (state is LocationsLoaded) {
+            final List<Location> locations = state.locations;
             return GoogleMap(
               initialCameraPosition: const CameraPosition(
                 target: LatLng(0.0, 0.0),
-                zoom: 1,
+                zoom: 2,
               ),
-              markers: state.locations.map((location) => Marker(
+              markers: locations.map((location) => Marker(
                 markerId: MarkerId(location.getName),
                 position: LatLng(location.getLatitude, location.getLongitude),
                 infoWindow: InfoWindow(
@@ -70,9 +71,13 @@ class _MapPageState extends State<MapPage> {
               )).toSet(),
             );
           } else if (state is LocationError) {
-            return Center(
-              child: Text(state.message),
-            );
+            WidgetsBinding.instance.addPostFrameCallback((_) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  content: Text(state.message),
+                ),
+              );
+            });
           }
           return const SizedBox.shrink();
         },

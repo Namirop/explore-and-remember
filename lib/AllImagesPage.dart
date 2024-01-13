@@ -13,8 +13,6 @@ class AllImagesPage extends StatefulWidget {
 
 class _AllImagesPageState extends State<AllImagesPage> {
 
-  late List<String> allImagesURLList;
-
   @override
   void initState() {
     super.initState();
@@ -48,18 +46,23 @@ class _AllImagesPageState extends State<AllImagesPage> {
       ),
       body: BlocBuilder<ImagesBloc, PickImagesState>(
         builder: (context, state) {
-          if (state is GetImagesURLsLoaded) {
+          if (state is LoadingState) {
+            return const Center(
+              child: CircularProgressIndicator(),
+            );
+          } else if (state is GetImagesURLsLoaded) {
+            final List<String> allImagesURLList = state.imageURLList;
             return Center(
               child: Column(
                 children: [
                   Expanded(
                     child: ListView.builder(
-                      itemCount: state.imageURLList.length,
+                      itemCount: allImagesURLList.length,
                       itemBuilder: (context, index) {
                         return Padding(
                           padding: const EdgeInsets.all(8.0),
                           child: Image.network(
-                              state.imageURLList[index]
+                              allImagesURLList[index]
                           ),
                         );
                       },
@@ -68,18 +71,18 @@ class _AllImagesPageState extends State<AllImagesPage> {
                 ],
               ),
             );
-          } else if (state is ErrorState) {
-            return Center(
-              child: Text(state.message),
-            );
-          } else if (state is LoadingState) {
-            return const Center(
-              child: CircularProgressIndicator(),
-            );
           } else if (state is ImagesListIsEmpty) {
             return const Center(
               child: Text("Aucune image"),
             );
+          } else if (state is ErrorState) {
+            WidgetsBinding.instance.addPostFrameCallback((_) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  content: Text(state.message),
+                ),
+              );
+            });
           }
           return const SizedBox.shrink();
         },

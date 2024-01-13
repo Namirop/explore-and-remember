@@ -30,15 +30,13 @@ class _UpdateLocationPageState extends State<UpdateLocationPage> {
 
   late Location location;
   late TextEditingController name;
-  late DateTime date;
   late TextEditingController note;
+  late DateTime date;
   late String id;
-  late List<String> imageURLList = [];
+  late List<String> imageURLList;
   late double longitude;
   late double latitude;
   late GoogleMapController? mapController;
-  final String apiKey = 'AIzaSyBC_9BXrQhZpwI3dWGhKiLtew1kMk1oevc';
-  bool isImagesLoading = false;
 
 
   @override
@@ -47,8 +45,8 @@ class _UpdateLocationPageState extends State<UpdateLocationPage> {
     location = widget.location;
     name = TextEditingController(text: location.getName);
     note = TextEditingController(text: location.getNote);
-    imageURLList = location.getImageURLs();
     id = location.getID;
+    imageURLList = location.getImageURLs();
     date = DateFormat("MMMM dd, yyyy").parse(location.getDate);
     longitude = location.getLongitude;
     latitude = location.getLatitude;
@@ -110,8 +108,7 @@ class _UpdateLocationPageState extends State<UpdateLocationPage> {
               size: 35,
             ),
             onPressed: () {
-              BlocProvider.of<LocationBloc>(context).add(DeleteLocation(location));
-              BlocProvider.of<LocationBloc>(context).add(DeleteImagesFromFirebaseStorage(imageURLList));
+              BlocProvider.of<LocationBloc>(context).add(DeleteLocation(location, imageURLList));
               Navigator.push(
                 context,
                 MaterialPageRoute(
@@ -292,10 +289,7 @@ class _UpdateLocationPageState extends State<UpdateLocationPage> {
               ),
               BlocBuilder<ImagesBloc, PickImagesState>(
                 builder: (context, state) {
-                  if (state is LoadingState) {
-                    isImagesLoading = true;
-                  } else if (state is PickImagesLoaded) {
-                    isImagesLoading = false;
+                  if (state is PickImagesLoaded) {
                     imageURLList = state.imageURLList;
                   } else if (state is ErrorState) {
                     WidgetsBinding.instance.addPostFrameCallback((_) {
