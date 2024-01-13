@@ -106,6 +106,7 @@ class _AddLocationPageState extends State<AddLocationPage> {
                         );
                       } else if (state is LocationSearchIsEmpty) {
                         WidgetsBinding.instance.addPostFrameCallback((_) {
+
                           ScaffoldMessenger.of(context).showSnackBar(
                             const SnackBar(
                               content: Text('Soyez plus précis dans votre recherche'),
